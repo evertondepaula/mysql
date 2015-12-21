@@ -6,8 +6,8 @@ namespace Epsoftware\Helpers\Interfaces;
  * <b>InterfaceConection: </b> Obrigatóridade de métodos e propriedades
  * @author tom
  */
-interface InterfaceConection {
-    
+interface InterfaceConection
+{
     abstract public function select($table, array $args = null);
     abstract public function join(array $args = null);
     abstract public function leftJoin(array $args = null);
@@ -23,5 +23,4 @@ interface InterfaceConection {
     abstract public function execute();
     abstract public function getStringQuery();
     abstract public function getlastInsertId();
-    
 }

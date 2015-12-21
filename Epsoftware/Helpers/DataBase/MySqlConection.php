@@ -7,8 +7,8 @@ namespace Epsoftware\Helpers\DataBase;
  *
  * @author tom
  */
-class MySqlConection extends \Conection{
-    
+class MySqlConection extends \Conection
+{
     /** @var String Query montada para submissao a base de dados */
     private $query = null;
     
@@ -34,22 +34,26 @@ class MySqlConection extends \Conection{
     public function update($table, array $args = null);
     public function fetch($class = null, $type = null);
     
-    
     /**
      * Procedimento executa as operações no bando de dados
      * @return boolean
      * @throws \Exception Erro na tentiva de execução junto ao bando de dados
      */
-    private function execute(){
-        try{
+    private function execute()
+    {
+        try
+        {
             if($this->stmt instanceof \PDOStatement):
+                
                 $retorno = $this->stmt->execute();
                 $this->stmt = null;
                 $this->query = null;
                 $this->queryDebug = null;
                 return $retorno;
             endif;
-        }  catch (\PDOException $e){
+        }
+        catch (\PDOException $e)
+        {
             throw new \Exception("ERRO SMTP: ".$e->getMessage());
         }
     }
@@ -58,7 +62,8 @@ class MySqlConection extends \Conection{
      *  Retorna a Query formada a ser submetida a base de dados
      * @return String 
      */
-    public function getStringQuery(){
+    public function getStringQuery()
+    {
         return $this->queryDebug;
     }
     
@@ -67,7 +72,8 @@ class MySqlConection extends \Conection{
      * Retorna o último Id inserido
      * @return Int
      */
-    public function getLastInsertId(){
+    public function getLastInsertId()
+    {
         return (int) $this->lastInsertId;
     }
     

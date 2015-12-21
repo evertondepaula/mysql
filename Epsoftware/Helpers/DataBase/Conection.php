@@ -6,8 +6,8 @@ namespace Epsoftware\Helpers\DataBase;
  * <b>Conection: </b> Classe abstrata para cordenar a conexao, bem como os metodos de manipulação de dados
  * * @author tom
  */
-abstract class Conection implements Interfaces\InterfaceConection{
-    
+abstract class Conection implements Interfaces\InterfaceConection
+{
     /** @var string Tipo de sgbd utilizado */
     private $sgbd = "mysql";
     
@@ -30,17 +30,17 @@ abstract class Conection implements Interfaces\InterfaceConection{
      * @var  Objeto \PDO de conexao com o bando de dados
      */
     protected $dbInstance = null;
-    
-    
+        
     /**
      * Ao construir a classe sem operador 'new', é feita a tentativa de estabelcer conexao com a base de dados.
      * @throws Exception ERRO de conexao
      */
-    private function __construct() {
-        
+    private function __construct()
+    {
         try
         {
             if($this->dbInstance === null):
+                
                 switch ($this->sgbd):
                 
                     case "mysql":
@@ -50,32 +50,31 @@ abstract class Conection implements Interfaces\InterfaceConection{
                     default :
                         throw new Exception("SGBD NÃO SUPORTADO.");
                 endswitch;
-                
             endif;
         }
-        catch(\PDOException $e){
+        catch(\PDOException $e)
+        {
             throw new Exception("ERRO DE CONEXAO: ".$e->getMessage());
         }
-        
     }
-    
     
     /**
      * Ao destruir a classe é feito a desconexao do bando de dados.
      * @throws Exception ERRO de desconexao
      */
-    private function __destruct() {
-        
+    private function __destruct()
+    {
         try
         {
             if($this->dbInstance !== null):
+                
                 $this->dbInstance = null;
             endif;
         }
-        catch(\Exception $e){
+        catch(\Exception $e)
+        {
             throw new Exception("ERRO DE DESCONEXAO: ".$e->getMessage());
         }
-        
     }
     
     abstract public function select($table, array $args = null);
@@ -105,7 +104,4 @@ abstract class Conection implements Interfaces\InterfaceConection{
     abstract public function getStringQuery();
     
     abstract public function getlastInsertId();
-     
 }
-
-
