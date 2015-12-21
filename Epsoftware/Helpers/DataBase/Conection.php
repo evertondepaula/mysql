@@ -6,7 +6,7 @@ namespace Epsoftware\Helpers\DataBase;
  * <b>Conection: </b> Classe abstrata para cordenar a conexao, bem como os metodos de manipulação de dados
  * * @author tom
  */
-abstract class Conection implements InterfaceConection{
+abstract class Conection implements Interfaces\InterfaceConection{
     
     /** @var string Tipo de sgbd utilizado */
     private $sgbd = "mysql";
