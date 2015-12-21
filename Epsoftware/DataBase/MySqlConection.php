@@ -4,7 +4,6 @@ namespace Epsoftware\DataBase;
 
 /**
  * <b>MySqlConection: </b> Esta Classe realiza os comandos em banco de dados MySql
- *
  * @author tom
  */
 class MySqlConection extends Conection
@@ -168,7 +167,7 @@ class MySqlConection extends Conection
      * Retorna a Query formada a ser submetida a base de dados
      * @return String 
      */
-    protected function getStringQuery()
+    public function getStringQuery()
     {
         return $this->queryDebug;
     }
@@ -178,7 +177,7 @@ class MySqlConection extends Conection
      * Retorna o último Id inserido
      * @return Int
      */
-    protected function getLastInsertId()
+    public function getLastInsertId()
     {
         return (int) $this->lastInsertId;
     }

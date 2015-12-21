@@ -1,9 +1,9 @@
 <?php
 
-namespace Epsoftware\Helpers\Interfaces;
+namespace Epsoftware\Interfaces;
 
 /**
- * <b>InterfaceConection: </b> Obrigatóridade de métodos e propriedades
+ * <b>InterfaceConection: </b> Obrigatóridade de métodos para estrutura de conexão e manipulação de dados ao banco de dados
  * @author tom
  */
 interface InterfaceConection
@@ -20,7 +20,6 @@ interface InterfaceConection
     abstract public function delete($table, array $args = null);
     abstract public function update($table, array $args = null);
     abstract public function fetch($class = null, $type = null);
-    abstract public function execute();
     abstract public function getStringQuery();
     abstract public function getlastInsertId();
 }

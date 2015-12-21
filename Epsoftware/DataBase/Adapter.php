@@ -4,14 +4,13 @@ namespace Epsoftware\DataBase;
 
 /**
  * <b>Adapter: </b> Realiza operações as em bando de dados
- *
  * @author tom
  */
 class Adapter extends Conection
 {   
     /**
      * Esta Objeto será alocado dinamicamente dependendo do bando de dados a ser trabalhado
-     * @var Object \MySqlConection | 
+     * @var Object \MySqlConection| 
      */
     private $adapter = null;
         
@@ -45,7 +44,7 @@ class Adapter extends Conection
     
     /**
      * Construção de metodo para impor condição join na seleção de dados
-     * @param array $args campos a serem feitos join ex.: array('a.idCliente', 'b.idCliente')
+     * @param array $args campos a serem feitos join ex.: array('a.campo' => 'b.campo')
      */
     public function join(array $args)
     {
@@ -55,7 +54,7 @@ class Adapter extends Conection
     
     /**
      * Construção de metodo para impor condição leftJoin na seleção de dados
-     * @param array $args campos a serem feitos leftJoin ex.: array('a.idCliente', 'b.idCliente')
+     * @param array $args campos a serem feitos leftJoin ex.: array('a.campo' => 'b.campo')
      */
     public function leftJoin(array $args)
     {
@@ -64,7 +63,7 @@ class Adapter extends Conection
     
     /**
      * Construção de metodo para impor condição rightJoin na seleção de dados
-     * @param array $args campos a serem feitos rightJoin ex.: array('a.idCliente', 'b.idCliente')
+     * @param array $args campos a serem feitos rightJoin ex.: array('a.campo' => 'b.campo')
      */
     public function rightJoin(array $args)
     {
@@ -74,6 +73,7 @@ class Adapter extends Conection
     /**
      * Construção de metodo para impor condição where na seleção de dados
      * @param array $args campos a serem feitos where
+     *                    ex.: array('campo' => 'valor')
      */
     public function where(array $args)
     {
@@ -82,7 +82,7 @@ class Adapter extends Conection
     
     /**
      * Construção de metodo para impor condição order na seleção de dados
-     * @param array $args campos a serem feitos order ex.: array('a.idCliente', 'asc')
+     * @param array $args campos a serem feitos order ex.: array('campo' => 'asc')
      */
     function order(array $args)
     {
@@ -91,7 +91,7 @@ class Adapter extends Conection
     
     /**
      * Construção de metodo para impor condição group na seleção de dados
-     * @param array $args campos a serem feitos grupo ex.: array('a.idCliente', 'dtCadastro')
+     * @param array $args campos a serem feitos grupo ex.: array('campo', 'campo')
      */
     function group(array $args)
     {
