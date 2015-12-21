@@ -14,4 +14,3 @@
 
 - Classe Conection para conexão com o bando de dados, abstraindo a conexão e fazendo métodos específicos para cada bando, começando por MySql
 - Classe Filters para filtros de arrays, utilizando-se SPL, criando ArrayObject;
-
