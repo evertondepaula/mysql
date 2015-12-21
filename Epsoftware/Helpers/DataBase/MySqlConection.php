@@ -7,18 +7,18 @@ namespace Epsoftware\Helpers\DataBase;
  *
  * @author tom
  */
-class MySqlConection extends Conection{
+class MySqlConection extends \Conection{
     
-    /** @var String Query montado para submissao a base de dados */
+    /** @var String Query montada para submissao a base de dados */
     private $query = null;
     
-    /** @var String Query para DEBUG, var mostrara os procedimento a ser submetido no bando de dados */
+    /** @var String Query para DEBUG, $var mostrará os procedimentos a serem submetidos no bando de dados */
     private $queryDebug = null;
     
     /** @var Int Último Id inserido no banco de dados*/
     private $lastInsertId = null;
     
-    /** @var Objeto criado para execução de comando na base de dados */
+    /** @var Objeto \PDOStatement criado para execução de comandos na base de dados */
     private $stmt = null;
     
     public function select($table, array $args = null);
@@ -36,7 +36,7 @@ class MySqlConection extends Conection{
     
     
     /**
-     * Procedimento executa as operação no bando de dados
+     * Procedimento executa as operações no bando de dados
      * @return boolean
      * @throws \Exception Erro na tentiva de execução junto ao bando de dados
      */

@@ -1,6 +1,6 @@
 <?php
 
-namespace Epsoftware\Helpers\DataBase\Interfaces;
+namespace Epsoftware\Helpers\Interfaces;
 
 /**
  * <b>InterfaceConection: </b> Obrigatóridade de métodos e propriedades

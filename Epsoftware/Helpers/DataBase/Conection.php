@@ -20,7 +20,7 @@ abstract class Conection implements Interfaces\InterfaceConection{
     /** @var Porta de conexao do bando de dados */
     private $port = "3306";
     
-    /** @var Usuário registrado no bando de dados para manipulacao de dados */
+    /** @var Usuário registrado no bando de dados para manipulacão de dados */
     private $user = "root";
     
     /** @var Senha do usuário registrado no bando de dados*/
@@ -31,6 +31,11 @@ abstract class Conection implements Interfaces\InterfaceConection{
      */
     protected $dbInstance = null;
     
+    
+    /**
+     * Ao construir a classe sem operador 'new', é feita a tentativa de estabelcer conexao com a base de dados.
+     * @throws Exception ERRO de conexao
+     */
     private function __construct() {
         
         try
@@ -45,6 +50,7 @@ abstract class Conection implements Interfaces\InterfaceConection{
                     default :
                         throw new Exception("SGBD NÃO SUPORTADO.");
                 endswitch;
+                
             endif;
         }
         catch(\PDOException $e){
@@ -53,6 +59,11 @@ abstract class Conection implements Interfaces\InterfaceConection{
         
     }
     
+    
+    /**
+     * Ao destruir a classe é feito a desconexao do bando de dados.
+     * @throws Exception ERRO de desconexao
+     */
     private function __destruct() {
         
         try
@@ -94,8 +105,7 @@ abstract class Conection implements Interfaces\InterfaceConection{
     abstract public function getStringQuery();
     
     abstract public function getlastInsertId();
-    
-    
+     
 }
 
 
