@@ -1,6 +1,7 @@
 {
     "name": "epsoftware/ep-classes",
     "description": "Desenvolvimento de uma base para facilitar a construção de aplicativos web",
+    "license" : "proprietary",
     "authors": [
         {
             "name": "tom",
