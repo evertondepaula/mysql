@@ -36,10 +36,19 @@ class Adapter extends Conection
      * Construção de metodo para selecão de dados
      * @param String $table Table, View a ser realizada consulta
      * @param array $args Lista de campos que retornaram da consulta
+     *                    Para usar alias no retorno da lista usar array encadiado:
+     *                    ex.: array(
+     *                           array(
+     *                              'campo' => 'alias'
+     *                           )
+     *                         );
+     *                    O primeiro array pode conter os campos sem alias
+     *                    Existe a opção de passar apenas um array campos sem alias, dois array somentes com campos com alias ou até mesmo mesclar campos com alias e sem alias.
      */
     public function select($table, array $args = null)
     {
-        return $this->adapter->select($table, $args);
+        $this->adapter->select($table, $args);
+        return $this->adapter;
     }
     
     /**

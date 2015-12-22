@@ -2,6 +2,8 @@
 
 namespace EpClasses\DataBase;
 
+use EpClasses\Helpers\Randomico;
+
 /**
  * <b>MySqlConection: </b> Esta Classe realiza os comandos em banco de dados MySql
  * @author tom
@@ -23,7 +25,8 @@ class MySqlConection extends Conection
     /** @var Objeto \PDOConection criado para exercer a ponte de conexao com o bando de dados */
     private $dbInstance = null;
     
-    
+    /** @var Array  Armazena os todos os apelidos usados em cada tabela da consulta */
+    private $nickname = array();
     
     /**
      * Método construtor para conexao com banco de dados
@@ -45,15 +48,14 @@ class MySqlConection extends Conection
      */
     public function select($table, array $args = null)
     {
-         if($args === null):
+        $nickname = $this->submitNickname($table);
+        if($args === null):
             
-            $this->query = "SELECT * FROM {$table}";
-            $this->queryDebug = "SELECT * FROM {$table}";
+            $this->query = "SELECT {$nickname}.* FROM {$table} {$nickname} ";
+            $this->queryDebug = "SELECT {$nickname}.* FROM {$table} {$nickname} ";
         else:
                 
         endif;
-        
-        return $this;
     }
     
     /**
@@ -239,5 +241,26 @@ class MySqlConection extends Conection
         $this->query = null;
         $this->queryDebug = null;
         $this->stmt = null;
+        unset($this->nickname);
+        $this->nickname = array();
+    }
+    
+    /**
+     * submitNickname (apelidos) a serem usados nas entidades objetos de pesquisa
+     * @param String $table Nome da tabela (entidade)
+     * @return String
+     */
+    private function submitNickname($table)
+    {
+        $find = false;
+        while(!$find):
+            
+            $randomLetters = Randomico\Random::getRandomLetters(3, Randomico\Random::LOWERCASE);
+            if(!in_array(array($table => $randomLetters), $this->nickname)):
+                
+                array_push($this->nickname, array($table => $randomLetters));
+                return $randomLetters;
+            endif;
+        endwhile;
     }
 }
