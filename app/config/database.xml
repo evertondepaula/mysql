@@ -3,8 +3,8 @@
 <database>
     <drive>pdo_mysql</drive>
     <host>localhost</host>
-    <dbname>teste</dbname>
     <port>3306</port>
+    <dbname>EpClassesFrame</dbname>
     <user>root</user>
     <password>root</password>
 </database>

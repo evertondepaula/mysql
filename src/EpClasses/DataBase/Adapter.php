@@ -20,8 +20,8 @@ class Adapter extends Conection
     public function __construct(){
         try 
         {
-            if($this->adapter !== null):
-                $this->adapter = parent::getConstruct();
+            if($this->adapter === null):
+                $this->adapter = parent::getConstructForAdapter();
             endif;
         }
         catch (Exception $ex)
@@ -39,7 +39,7 @@ class Adapter extends Conection
      */
     public function select($table, array $args = null)
     {
-        $this->adapter->select($table, $args);
+        return $this->adapter->select($table, $args);
     }
     
     /**
@@ -48,9 +48,8 @@ class Adapter extends Conection
      */
     public function join(array $args)
     {
-        $this->adapter->join($args);
+        return $this->adapter->join($args);
     }
-    
     
     /**
      * Construção de metodo para impor condição leftJoin na seleção de dados
@@ -58,7 +57,7 @@ class Adapter extends Conection
      */
     public function leftJoin(array $args)
     {
-        $this->adapter->leftJoin($args);
+        return $this->adapter->leftJoin($args);
     }
     
     /**
@@ -67,7 +66,7 @@ class Adapter extends Conection
      */
     public function rightJoin(array $args)
     {
-        $this->adapter->rightJoin($args);
+        return $this->adapter->rightJoin($args);
     }
     
     /**
@@ -77,7 +76,7 @@ class Adapter extends Conection
      */
     public function where(array $args)
     {
-        $this->adapter->where($args);
+        return $this->adapter->where($args);
     }
     
     /**
@@ -86,7 +85,7 @@ class Adapter extends Conection
      */
     function order(array $args)
     {
-        $this->adapter->order($args);   
+        return $this->adapter->order($args);   
     }
     
     /**
@@ -95,7 +94,7 @@ class Adapter extends Conection
      */
     function group(array $args)
     {
-        $this->adapter->group($args);
+        return $this->adapter->group($args);
     }
     
     /**
@@ -140,18 +139,27 @@ class Adapter extends Conection
     
     /**
      * Serialização dos valores recebido de select, usar após já ter elaborado a cadeia de construção do método <b>->select()</b>
-     * @param Object $class Indica a qual object o deseja-se transforma o retorno da consulta
-     * @param String $type Tipo de fetch a ser realizado
-     *                    fetchAll
-     *                    fetchObject
-     *                    fetchArray
+     * @param Object $type Tipo de fetch a ser realizado
+     *                    PDO::FETCH_ASSOC
+     *                    PDO::FETCH_BOTH
+     *                    PDO::FETCH_CLASS
+     *                    e outros
+     * @param String $class Indica a qual object deseja-se transforma o retorno da consulta
      * @return Object|Array
      */
-    public function fetch($class = null, $type = null)
+    public function fetch($type = null, $class = null)
     {
         return $this->adapter->fetch($class, $type);
     }
     
+    /**
+     * Executa métodos no bando de dados, como delet por exemplo, retorna true ou false para à operação
+     * @return boolean true|false
+     */
+    public function execute()
+    {
+        return $this->adapter->execute();
+    }
     
     /**
      * Metodo retorna a string a ser submetida no bando de dados

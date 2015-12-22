@@ -19,7 +19,8 @@ interface InterfaceConection
     public function insert($table, array $args);
     public function delete($table);
     public function update($table, array $args);
-    public function fetch($class = null, $type = null);
+    public function fetch($type = null, $class = null);
+    public function execute();
     public function getStringQuery();
     public function getlastInsertId();
 }

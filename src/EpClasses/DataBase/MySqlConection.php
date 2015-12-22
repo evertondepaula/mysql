@@ -20,6 +20,24 @@ class MySqlConection extends Conection
     /** @var Objeto \PDOStatement criado para execução de comandos na base de dados */
     private $stmt = null;
     
+    /** @var Objeto \PDOConection criado para exercer a ponte de conexao com o bando de dados */
+    private $dbInstance = null;
+    
+    
+    
+    /**
+     * Método construtor para conexao com banco de dados
+     * @param \PDO $conection Conexao estabelcida com PDO com o bando de dados
+     */
+    protected function __construct(\PDO $conection)
+    {
+        if($this->dbInstance === null):
+            $this->dbInstance = $conection;
+            $this->dbInstance->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $this->dbInstance->setAttribute(\PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
+        endif;
+    }
+    
     /**
      * Select de dados em bando de dados MySql
      * @param String $table Tabela, View a ser trabalhada no banco de dados
@@ -27,7 +45,15 @@ class MySqlConection extends Conection
      */
     public function select($table, array $args = null)
     {
+         if($args === null):
+            
+            $this->query = "SELECT * FROM {$table}";
+            $this->queryDebug = "SELECT * FROM {$table}";
+        else:
+                
+        endif;
         
+        return $this;
     }
     
     /**
@@ -127,16 +153,43 @@ class MySqlConection extends Conection
     
     /**
      * Serialização dos valores recebido de consulta.
-     * @param Object $class Indica a qual object o deseja-se transforma o retorno da consulta
-     * @param String $type Tipo de fetch a ser realizado
-     *                    fetchAll
-     *                    fetchObject
-     *                    fetchArray
+     * @param Object $type Tipo de fetch a ser realizado
+     *                    PDO::FETCH_ASSOC
+     *                    PDO::FETCH_BOTH
+     *                    PDO::FETCH_CLASS
+     *                    e outros
+     * @param String $class Indica a qual object deseja-se transforma o retorno da consulta
      * @return Object|Array
      */
-    public function fetch($class = null, $type = null)
+    public function fetch($type = null , $class = null)
     {
-        
+        if($this->query !== null):
+            
+            $callback = null;
+            $this->stmt = $this->dbInstance->prepare($this->query);
+
+            if($this->stmt->execute()):
+
+                if($type === null && $class === null):
+
+                    $callback = $this->stmt->fetchAll();
+                elseif($class !== null && $type !== null):
+
+                    $callback = $this->stmt->fetchAll($type, $class);
+                elseif(is_string($type) && $class === null):
+
+                    $callback = $this->stmt->fetchAll(\PDO::FETCH_CLASS, $type);
+                else:
+
+                    $callback = $this->stmt->fetchAll($type);
+                endif;
+            endif;
+
+            $this->clear();
+            
+            return $callback;
+        endif;
+        return array('AVISO'=>'É preciso estabelecer o método de pesquisa novamente, após a execução do fetch() ou execute(), a consulta é deletada');
     }
     
     /**
@@ -144,17 +197,13 @@ class MySqlConection extends Conection
      * @return boolean true|false
      * @throws \Exception Erro na tentiva de execução junto ao bando de dados
      */
-    private function execute()
+    public function execute()
     {
         try
         {
             if($this->stmt instanceof \PDOStatement):
                 
-                $retorno = $this->stmt->execute();
-                $this->stmt = null;
-                $this->query = null;
-                $this->queryDebug = null;
-                return $retorno;
+                return $this->stmt->execute();
             endif;
         }
         catch (\PDOException $e)
@@ -180,5 +229,15 @@ class MySqlConection extends Conection
     public function getLastInsertId()
     {
         return (int) $this->lastInsertId;
+    }
+    
+    /**
+     * Limpar as propriedades da Classe
+     */
+    private function clear()
+    {
+        $this->query = null;
+        $this->queryDebug = null;
+        $this->stmt = null;
     }
 }

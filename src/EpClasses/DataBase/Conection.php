@@ -2,13 +2,14 @@
 
 namespace EpClasses\DataBase;
 
+use EpClasses\Interfaces\InterfaceConection;
 use EpClasses\Helpers\Read;
 
 /**
  * <b>Conection: </b> Classe abstrata para cordenar a conexao, bem como os metodos de manipulação de dados
  * @author tom
  */
-abstract class Conection implements EpClasses\Interfaces\InterfaceConection
+abstract class Conection implements InterfaceConection
 {
     /**
      * Constante para arquivo de configuração
@@ -34,27 +35,19 @@ abstract class Conection implements EpClasses\Interfaces\InterfaceConection
     private $password = null;
 
     /**
-     * @var  Objeto \PDO de conexao com o bando de dados
-     */
-    protected $dbInstance = null;
-    
-    
-    /**
      * Ao construir a classe é feita a tentativa de estabelecer conexão com a base de dados, bem como determinar qual o banco de dados que será trabalhado
      * @return Object MySqlConection|
      * @throws Exception ERRO de conexao
      */
-    protected static function getConstruct()
+    public function getConstructForAdapter()
     {
         try
         {
-            if($this->dbInstance === null):
                 return $this->getDbInstance();
-            endif;
         }
         catch(\PDOException $e)
         {
-            throw Exception("ERRO DE CONEXAO: ".$e->getMessage());
+            throw new \PDOException("ERRO DE CONEXAO: ".$e->getMessage());
         }
     }
     
@@ -67,10 +60,10 @@ abstract class Conection implements EpClasses\Interfaces\InterfaceConection
         $this->readConfig();
         switch ($this->drive):
             case "pdo_mysql":
-                $this->dbInstance = new \PDO("mysql:host={$this->host};dbname={$this->dbname};port={$this->port}", $this->user);
-                return new \MySqlConection;
 
+                return new MySqlConection(new \PDO("mysql:host={$this->host};dbname={$this->dbname};port={$this->port}", $this->user, $this->password));
             default :
+                
                 return null;
         endswitch;
     }
@@ -98,11 +91,12 @@ abstract class Conection implements EpClasses\Interfaces\InterfaceConection
     {
         $read = new Read\ReadXml();
         $xml = $read->getArrayFromXml(self::FILE_CONFIG);
-        $this->drive = $xml->database->drive;
-        $this->host = $xml->database->host;
-        $this->port = $xml->database->port;
-        $this->user = $xml->database->user;
-        $this->password = $xml->database->password;
+        $this->drive = $xml->drive;
+        $this->host = $xml->host;
+        $this->dbname = $xml->dbname;
+        $this->port = $xml->port;
+        $this->user = $xml->user;
+        $this->password = $xml->password;
     }
     
     /**
@@ -163,7 +157,12 @@ abstract class Conection implements EpClasses\Interfaces\InterfaceConection
     /**
      * Obriga a implentação de método para realizar fetchs de dados(consutlas)
      */
-    abstract public function fetch($class = null, $type = null);
+    abstract public function fetch($type = null, $class = null);
+    
+    /**
+     * Obriga a implentação de método para realizar execução de metodos no bando de dados
+     */
+    abstract public function execute();
     
     /**
      *  Obriga a implentação de método para conseguir a string da query formada pela objeto de execução da Query
