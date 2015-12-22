@@ -1,6 +1,6 @@
 <?php
 
-namespace epclasses\database;
+namespace EpClasses\DataBase;
 
 /**
  * <b>Adapter: </b> Realiza operações as em bando de dados
@@ -37,7 +37,7 @@ class Adapter extends Conection
      * @param String $table Table, View a ser realizada consulta
      * @param array $args Lista de campos que retornaram da consulta
      */
-    public function select($table, array $args)
+    public function select($table, array $args = null)
     {
         $this->adapter->select($table, $args);
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace epclasses\database;
+namespace EpClasses\DataBase;
 
 /**
  * <b>MySqlConection: </b> Esta Classe realiza os comandos em banco de dados MySql
@@ -34,7 +34,7 @@ class MySqlConection extends Conection
      * Condição Join em bando de dados MySql
      * @param array $args Lista de campos a serem feito join
     */
-    public function join(array $args = null)
+    public function join(array $args)
     {
         
     }
@@ -43,7 +43,7 @@ class MySqlConection extends Conection
      * Condição leftJoin em bando de dados MySql
      * @param array $args Lista de campos a serem feito leftJoin
     */
-    public function leftJoin(array $args = null)
+    public function leftJoin(array $args)
     {
         
     }
@@ -52,7 +52,7 @@ class MySqlConection extends Conection
      * Condição rightJoin em bando de dados MySql
      * @param array $args Lista de campos a serem feitos rightJoin
     */
-    public function rightJoin(array $args = null)
+    public function rightJoin(array $args)
     {
         
     }
@@ -61,7 +61,7 @@ class MySqlConection extends Conection
      * Condição where em bando de dados MySql
      * @param array $args Lista de condições WHERE da consulta
     */
-    public function where(array $args = null)
+    public function where(array $args)
     {
         
     }
@@ -70,7 +70,7 @@ class MySqlConection extends Conection
      * Condição order em bando de dados MySql
      * @param array $args Lista de condições ORDER da consulta
     */
-    public function order(array $args = null)
+    public function order(array $args)
     {
         
     }
@@ -79,7 +79,7 @@ class MySqlConection extends Conection
      * Condição group em bando de dados MySql
      * @param array $args Lista de condições GROUP da consulta
     */
-    public function group(array $args = null)
+    public function group(array $args)
     {
         
     }
@@ -88,7 +88,7 @@ class MySqlConection extends Conection
      * Condição limit em bando de dados MySql
      * @param array $args Lista de condições LIMIT da consulta
     */
-    public function limit(array $args = null)
+    public function limit($args)
     {
         
     }
@@ -99,7 +99,7 @@ class MySqlConection extends Conection
      * @param array $args Lista de campos e valores a serem inseridos
      * @return boolean true|false
      */
-    public function insert($table, array $args = null)
+    public function insert($table, array $args)
     {
         
     }

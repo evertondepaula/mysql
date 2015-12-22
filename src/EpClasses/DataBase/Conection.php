@@ -1,14 +1,14 @@
 <?php
 
-namespace epclasses\database;
+namespace EpClasses\DataBase;
 
-use epclasses\helpers\read;
+use EpClasses\Helpers\Read;
 
 /**
  * <b>Conection: </b> Classe abstrata para cordenar a conexao, bem como os metodos de manipulação de dados
  * @author tom
  */
-abstract class Conection implements \interfaces\InterfaceConection
+abstract class Conection implements EpClasses\Interfaces\InterfaceConection
 {
     /**
      * Constante para arquivo de configuração
@@ -96,7 +96,7 @@ abstract class Conection implements \interfaces\InterfaceConection
      */
     private function readConfigXML()
     {
-        $read = new read\ReadXml();
+        $read = new Read\ReadXml();
         $xml = $read->getArrayFromXml(self::FILE_CONFIG);
         $this->drive = $xml->database->drive;
         $this->host = $xml->database->host;
@@ -113,42 +113,42 @@ abstract class Conection implements \interfaces\InterfaceConection
     /**
      * Obriga a implentação de método para implementar condição join no select ao no bando de dados
      */
-    abstract public function join(array $args = null);
+    abstract public function join(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição leftJoin no select ao no bando de dados
      */
-    abstract public function leftJoin(array $args = null);
+    abstract public function leftJoin(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição rightJoin no select ao bando de dados
      */
-    abstract public function rightJoin(array $args = null);
+    abstract public function rightJoin(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição where no select ao bando de dados
      */
-    abstract public function where(array $args = null);
+    abstract public function where(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição order no select ao bando de dados
      */
-    abstract public function order(array $args = null);
+    abstract public function order(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição group no select ao bando de dados
      */
-    abstract public function group(array $args = null);
+    abstract public function group(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição limit no select ao bando de dados
      */
-    abstract public function limit(array $args = null);
+    abstract public function limit($args);
     
     /**
      * Obriga a implentação de método para realizar inserts ao bando de dados
      */
-    abstract public function insert($table, array $args = null);
+    abstract public function insert($table, array $args);
     
     /**
      * Obriga a implentação de método para realizar deletes ao bando de dados
@@ -158,7 +158,7 @@ abstract class Conection implements \interfaces\InterfaceConection
     /**
      * Obriga a implentação de método para realizar updates ao bando de dados
      */
-    abstract public function update($table, array $args = null);
+    abstract public function update($table, array $args);
     
     /**
      * Obriga a implentação de método para realizar fetchs de dados(consutlas)
