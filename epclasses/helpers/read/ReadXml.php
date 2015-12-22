@@ -1,6 +1,6 @@
 <?php
 
-namespace EpClasses\Helpers\Read;
+namespace epclasses\helpers\read;
 
 /**
  * <b>ReadYml:</b> Utilizado na leitura de arquivos YML|YAML

@@ -1,6 +1,6 @@
 <?php
 
-namespace EpClasses\Interfaces;
+namespace epclasses\interfaces;
 
 /**
  * <b>InterfaceConection: </b> Obrigatóridade de métodos para estrutura de conexão e manipulação de dados ao banco de dados

@@ -1,5 +1,5 @@
 {
-    "name": "epsoftware/ep-classes",
+    "name": "epsoftware/epclasses",
     "description": "Desenvolvimento de uma base para facilitar a construção de aplicativos web",
     "license" : "proprietary",
     "authors": [
@@ -12,7 +12,7 @@
     "require-dev": {},
     "minimum-stability":"dev",
     "autoload" : {
-        "psr-0" :{"epsoftware" :"src/"}
+        "psr-0" :{"epsoftware" : "src/"}
     },
     "config":{
         "bin-dir":"bin/"

@@ -1,6 +1,6 @@
 <?php
 
-namespace EpClasses\DataBase;
+namespace epclasses\database;
 
 /**
  * <b>MySqlConection: </b> Esta Classe realiza os comandos em banco de dados MySql

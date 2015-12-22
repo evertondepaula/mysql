@@ -1,14 +1,14 @@
 <?php
 
-namespace EpClasses\DataBase;
+namespace epclasses\database;
 
-use EpClasses\Helpers\Read;
+use epclasses\helpers\read;
 
 /**
  * <b>Conection: </b> Classe abstrata para cordenar a conexao, bem como os metodos de manipulação de dados
  * @author tom
  */
-abstract class Conection implements \Interfaces\InterfaceConection
+abstract class Conection implements \interfaces\InterfaceConection
 {
     /**
      * Constante para arquivo de configuração
@@ -96,7 +96,7 @@ abstract class Conection implements \Interfaces\InterfaceConection
      */
     private function readConfigXML()
     {
-        $read = new Read\ReadXml();
+        $read = new read\ReadXml();
         $xml = $read->getArrayFromXml(self::FILE_CONFIG);
         $this->drive = $xml->database->drive;
         $this->host = $xml->database->host;

@@ -1,6 +1,6 @@
 <?php
 
-namespace EpClasses\DataBase;
+namespace epclasses\database;
 
 /**
  * <b>Adapter: </b> Realiza operações as em bando de dados
