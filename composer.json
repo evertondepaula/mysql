@@ -1,0 +1,19 @@
+{
+    "name": "epsoftware/EpClasses",
+    "description": "Desenvolvimento de uma base para facilitar a construção de aplicativos web",
+    "authors": [
+        {
+            "name": "tom",
+            "email": "everton_to@gmail.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {},
+    "minimum-stability":"dev",
+    "autoload" : {
+        "psr-0" :{"epsoftware" :"EpClasses/"}
+    },
+    "config":{
+        "bin-dir":"bin/"
+    }
+}

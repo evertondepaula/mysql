@@ -1,6 +1,8 @@
 <?php
 
-namespace Epsoftware\DataBase;
+namespace EpClasses\DataBase;
+
+use EpClasses\Helpers\Read;
 
 /**
  * <b>Conection: </b> Classe abstrata para cordenar a conexao, bem como os metodos de manipulação de dados
@@ -8,6 +10,11 @@ namespace Epsoftware\DataBase;
  */
 abstract class Conection implements \Interfaces\InterfaceConection
 {
+    /**
+     * Constante para arquivo de configuração
+     */
+    const FILE_CONFIG = __DIR__.'/../../../app/config/database.xml';
+    
     /** @var string Tipo de sgbd utilizado */
     private $drive = null;
     
@@ -37,7 +44,7 @@ abstract class Conection implements \Interfaces\InterfaceConection
      * @return Object MySqlConection|
      * @throws Exception ERRO de conexao
      */
-    protected function __construct()
+    protected static function getConstruct()
     {
         try
         {
@@ -47,7 +54,7 @@ abstract class Conection implements \Interfaces\InterfaceConection
         }
         catch(\PDOException $e)
         {
-            throw new Exception("ERRO DE CONEXAO: ".$e->getMessage());
+            throw Exception("ERRO DE CONEXAO: ".$e->getMessage());
         }
     }
     
@@ -59,7 +66,6 @@ abstract class Conection implements \Interfaces\InterfaceConection
     {
         $this->readConfig();
         switch ($this->drive):
-                
             case "pdo_mysql":
                 $this->dbInstance = new \PDO("mysql:host={$this->host};dbname={$this->dbname};port={$this->port}", $this->user);
                 return new \MySqlConection;
@@ -70,10 +76,33 @@ abstract class Conection implements \Interfaces\InterfaceConection
     }
 
     /**
-     * Esta função é responsável por ler as configurações do arquivo app/config/config.yml
+     * Esta função é responsável por ler as configurações do arquivo app/config/config.* xml | yml
      */
-    private function readConfig(){
+    private function readConfig()
+    {
+        $ext = pathinfo(self::FILE_CONFIG, PATHINFO_EXTENSION);
+        switch ($ext):
+            
+            case "yml":
+                return null;
+                
+            default :
+                return $this->readConfigXML();
+        endswitch;
+   }
     
+    /**
+     * Esta função é reponsável por ler configurações de arquivos XML
+     */
+    private function readConfigXML()
+    {
+        $read = new Read\ReadXml();
+        $xml = $read->getArrayFromXml(self::FILE_CONFIG);
+        $this->drive = $xml->database->drive;
+        $this->host = $xml->database->host;
+        $this->port = $xml->database->port;
+        $this->user = $xml->database->user;
+        $this->password = $xml->database->password;
     }
     
     /**

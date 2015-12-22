@@ -1,6 +1,6 @@
 <?php
 
-namespace Epsoftware\Helpers\Filters;
+namespace EpClasses\Helpers\Filters;
 
 /**
  * Filter Class filtra Iterators multidimensionais
