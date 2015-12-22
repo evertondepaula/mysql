@@ -1,6 +1,6 @@
 <?php
 
-namespace Epsoftware\DataBase;
+namespace EpClasses\DataBase;
 
 /**
  * <b>Adapter: </b> Realiza operações as em bando de dados
@@ -21,7 +21,7 @@ class Adapter extends Conection
         try 
         {
             if($this->adapter !== null):
-                $this->adapter = parent::__construct();
+                $this->adapter = parent::getConstruct();
             endif;
         }
         catch (Exception $ex)
