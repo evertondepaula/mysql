@@ -102,7 +102,12 @@ abstract class Conection implements InterfaceConection
     /**
      * Obriga a implentação de método para realizar select no bando de dados
      */
-    abstract public function select($table, array $args = null);
+    abstract public function select(array $args);
+    
+    /**
+     * Obriga a implentação de método para realizar functions no bando de dados
+     */
+    abstract public function functions(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição join no select ao no bando de dados
@@ -153,6 +158,11 @@ abstract class Conection implements InterfaceConection
      * Obriga a implentação de método para realizar updates ao bando de dados
      */
     abstract public function update($table, array $args);
+    
+    /**
+     * Obriga a implentação de método para realizar procedures no bando de dados
+     */
+    abstract public function procedure(array $args);
     
     /**
      * Obriga a implentação de método para realizar fetchs de dados(consutlas)

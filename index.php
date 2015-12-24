@@ -5,7 +5,5 @@ require "vendor/autoload.php";
 
 $a = new \EpClasses\DataBase\Adapter();
 
-$stdClass = $a->select("users")
-              ->fetch(\PDO::FETCH_CLASS);
-
-var_dump($stdClass);
+$a->functions(array( "functionName1" => array( "tabela1" => array( "parametro1", "parametro2" ), "tabela2" => array( "parametro3", "parametro4" ), array("parametro_sem_tabela") ), "functionName2" => array( "tabela1" => array( "parametro1", "parametro2" ), "tabela2" => array( "parametro3", "parametro4" ), array("parametro_sem_tabela") ), "alias" ));
+echo $a->getStringQuery();

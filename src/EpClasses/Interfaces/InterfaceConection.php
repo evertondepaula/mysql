@@ -8,7 +8,8 @@ namespace EpClasses\Interfaces;
  */
 interface InterfaceConection
 {
-    public function select($table, array $args = null);
+    public function select(array $args);
+    public function functions(array $args);
     public function join(array $args);
     public function leftJoin(array $args);
     public function rightJoin(array $args);
@@ -19,6 +20,7 @@ interface InterfaceConection
     public function insert($table, array $args);
     public function delete($table);
     public function update($table, array $args);
+    public function procedure(array $args);
     public function fetch($type = null, $class = null);
     public function execute();
     public function getStringQuery();

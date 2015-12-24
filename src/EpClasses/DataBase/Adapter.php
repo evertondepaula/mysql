@@ -34,23 +34,59 @@ class Adapter extends Conection
     
     /**
      * Construção de metodo para selecão de dados
-     * @param String $table Table, View a ser realizada consulta
-     * @param array $args Lista de campos que retornaram da consulta
-     *                    Para usar alias no retorno da lista usar array encadiado:
-     *                    ex.: array(
+     * @param array $args Lista de tables (entidades) e campos que retornaram da consulta
+     *                    <b>ex.: array(
+     *                          'tablename' =>
      *                           array(
      *                              'campo' => 'alias'
      *                           )
-     *                         );
-     *                    O primeiro array pode conter os campos sem alias
-     *                    Existe a opção de passar apenas um array campos sem alias, dois array somentes com campos com alias ou até mesmo mesclar campos com alias e sem alias.
+     *                         );</b>
+     *                    O primeiro array deve conter o nome da table (entidade) que contém os campos serem pesquisados
+     *                    O Array da 'tableName' deve conter os nomes das colunas e existe a opção de passar o nome alias do campos como valor da key do array que contém o nome do campo da table
      */
-    public function select($table, array $args = null)
+    public function select(array $args)
     {
-        $this->adapter->select($table, $args);
+        $this->adapter->select($args);
         return $this->adapter;
     }
     
+    /**
+     * Construção de metodo para selecão de functions do banco de dados
+     * Este método pode ser usado antes ou depois do método selet, ele criara a sintaxe para se trabalhar com as tables necessarias
+     * @param array $args Nome da função, tabelas, campos e valores fixos que serão utilizados como parâmetros
+     *                    <b>ex.: array(
+     *                               "functionName1" =>
+     *                                   array(
+     *                                       "tabela1" => array(
+     *                                           "parametro1", "parametro2"
+     *                                       ),
+     *                                       "tabela2" => array(
+     *                                           "parametro3", "parametro4"
+     *                                       ),
+     *                                       array("parametro_sem_tabela")
+     *                                   ),
+     *                               "functionName2" =>
+     *                                   array(
+     *                                       "tabela1" => array(
+     *                                           "parametro1", "parametro2"
+     *                                       ),
+     *                                       "tabela2" => array(
+     *                                           "parametro3", "parametro4"
+     *                                       ),
+     *                                       array("parametro_sem_tabela")
+     *                                   ), "alias"
+     *                               )</b>
+     *                    O primeiro array deve conter o nome da função
+     *                    Após inserir array com nomes das tabelas que a função irá operar, os valores do array serão os parametros, que poderão ser campos da table
+     *                    Caso queira passar parametros fixos, não pode ser coloca o nome da table a ser trabalhada
+     *                    Ao final o segundo item do array principal pode ser o alias da função, é recomendado o seu uso
+     */
+    public function functions(array $args)
+    {
+        $this->adapter->functions($args);
+        return $this->adapter;
+    }
+
     /**
      * Construção de metodo para impor condição join na seleção de dados
      * @param array $args campos a serem feitos join ex.: array('a.campo' => 'b.campo')
@@ -113,6 +149,7 @@ class Adapter extends Conection
     public function limit($args)
     {
         $this->adapter->limit($args);
+        return $this->adapter;
     }
     
     /**
@@ -144,6 +181,22 @@ class Adapter extends Conection
     public function update($table, array $args)
     {
         return $this->adapter->update($table, $args);
+    }
+    
+    /**
+     * Construção de metodo para procedures de dados
+     * @param array $args Nome da procedure, valores fixos que serão utilizados como parâmetros
+     *                    <b>ex.: array(
+     *                          'procedureName' => array(
+     *                                  'parametro1', 'parametro2', '...'
+     *                              )
+     *                         );</b>
+     *                    O primeiro array deve conter o nome da procedure
+     *                    Este array aponta para um segundo que conterá os valores dos parametros
+     */
+    public function procedure(array $args)
+    {
+        return $this->adapter->procedure($args);
     }
     
     /**

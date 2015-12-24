@@ -17,7 +17,7 @@ class FilterArrayObject extends \FilterIterator
      * @param ArrayIterator $key Chaves do ArrayObject em que se aplicaram o filtro
      * @param String $filter Conteudo a ser filtrado
      */
-    public function __construct(\ArrayObject $arrayObject, ArrayIterator $key, $filter)
+    public function __construct(\ArrayObject $arrayObject, \ArrayIterator $key, $filter)
     {
         parent::__construct($arrayObject->getIterator());
         $this->key = $key;
