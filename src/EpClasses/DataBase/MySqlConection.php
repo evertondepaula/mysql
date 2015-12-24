@@ -11,6 +11,12 @@ use EpClasses\Helpers\Filters;
  */
 class MySqlConection extends Conection
 {
+    /**
+     * Constantes
+     */
+    const SQL_STRING = 1;
+    const SQL_OBJECT = 2;
+    
     /** @var String Query montada para submissao a base de dados */
     private $query = null;
     
@@ -34,6 +40,9 @@ class MySqlConection extends Conection
     
     /** @var Array contém a string sql com todos os joins da aplicação */
     private $joins = array();
+    
+    /** @var Array contém a string sql com todos os havings da aplicação */
+    private $havings = array();
     
     /** @var Array contém os valores de filtros where*/
     private $where = array();
@@ -65,7 +74,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Select de dados em bando de dados MySql
+     * Select de dados em banco de dados MySql
      * @param Array $args Lista de de table(entidades) e campos que deveram retornar da consulta
      */
     public function select(array $args)
@@ -108,7 +117,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Select de dados em bando de dados MySql
+     * Select de dados em banco de dados MySql
      * @param Array $args Lista de de table(entidades) e campos que deveram retornar da consulta
      */
     public function functions(array $args)
@@ -148,7 +157,8 @@ class MySqlConection extends Conection
                                 foreach ($fields as $field):
 
                                     $vrgl = (count($fields) === $countFields && count($tables) === $countTable ) ? "" : ",";
-                                    $this->select .= "{$field}{$vrgl}";
+                                    $this->setToPrepare(array(":{$field}" => $field));
+                                    $this->select .= ":{$field}{$vrgl}";
                                     $countFields++;  
                                 endforeach;
                             endif;
@@ -176,7 +186,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Condição Join em bando de dados MySql
+     * Condição Join em banco de dados MySql
      * @param array $args Lista de campos a serem feito join
     */
     public function join(array $args)
@@ -185,7 +195,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Condição leftJoin em bando de dados MySql
+     * Condição leftJoin em banco de dados MySql
      * @param array $args Lista de campos a serem feito leftJoin
     */
     public function leftJoin(array $args)
@@ -194,7 +204,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Condição rightJoin em bando de dados MySql
+     * Condição rightJoin em banco de dados MySql
      * @param array $args Lista de campos a serem feitos rightJoin
     */
     public function rightJoin(array $args)
@@ -203,7 +213,16 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Condição where em bando de dados MySql
+     * Condição having em banco de dados MySql
+     * @param array $args Lista de campos a serem feitos having
+     */
+    public function having(array $args)
+    {
+        
+    }
+
+    /**
+     * Condição where em banco de dados MySql
      * @param array $args Lista de condições WHERE da consulta
     */
     public function where(array $args)
@@ -212,7 +231,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Condição order em bando de dados MySql
+     * Condição order em banco de dados MySql
      * @param array $args Lista de condições ORDER da consulta
     */
     public function order(array $args)
@@ -221,7 +240,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Condição group em bando de dados MySql
+     * Condição group em banco de dados MySql
      * @param array $args Lista de condições GROUP da consulta
     */
     public function group(array $args)
@@ -230,7 +249,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Condição limit em bando de dados MySql
+     * Condição limit em banco de dados MySql
      * @param Int $args int com LIMIT de retorno da consulta
     */
     public function limit($args)
@@ -246,7 +265,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Insert de dados em bando de dados MySql
+     * Insert de dados em banco de dados MySql
      * @param type $table Tabela, View a ser feito insert no bando de dados
      * @param array $args Lista de campos e valores a serem inseridos
      * @return boolean true|false
@@ -257,7 +276,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Delete de dados em bando de dados MySql
+     * Delete de dados em banco de dados MySql
      * @param type $table Tabela a ser feito delete no bando de dados
      * @return boolean true|false
      */
@@ -267,7 +286,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Update de dados em bando de dados MySql
+     * Update de dados em banco de dados MySql
      * @param type $table Tabela, View a ser feito insert no bando de dados
      * @param array $args Lista de campos e valores a serem feitos atualização
      * @return boolean true|false
@@ -298,12 +317,13 @@ class MySqlConection extends Conection
      */
     public function fetch($type = null , $class = null)
     {
-        $this->query = $this->constructQuery();
+        $this->query = $this->constructQueryString();
         
         if($this->query !== null):
             
             $callback = null;
             $this->stmt = $this->dbInstance->prepare($this->query);
+            $this->bindValues();
 
             if($this->stmt->execute()):
 
@@ -330,7 +350,7 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Procedimento executa as operações no bando de dados
+     * Procedimento executa as operações no banco de dados
      * @return boolean true|false
      * @throws \Exception Erro na tentiva de execução junto ao bando de dados
      */
@@ -351,13 +371,23 @@ class MySqlConection extends Conection
        
     /**
      * Retorna a Query formada a ser submetida a base de dados
-     * @return String 
+     * @param int $operation Seleciona o tipo de retorno
+     *                       ::SQL_STRING - 1 retornará uma \String com a query (default)
+     *                       ::SQL_OBJECT - 2 retornará um \ArrayObject separado por procedimentos sql
+     * @return \String|\ArrayObject 
      */
-    public function getStringQuery()
+    public function getQuery($operation = 1)
     {
-        return $this->constructQuery();
+        if($operation === self::SQL_STRING):
+            
+            return $this->getToPrepare($this->constructQueryString());
+        endif;
+        
+        if($operation === self::SQL_OBJECT):
+            
+            return $this->constructQueryObject();
+        endif;
     }
-    
     
     /**
      * Retorna o último Id inserido
@@ -405,7 +435,7 @@ class MySqlConection extends Conection
      * Esta função constroe tada a query para execução no banco de dados
      * @return String Query construida para perpetuar select
      */
-    private function constructQuery()
+    private function constructQueryString()
     {
         $query = null;
         if($this->select !== null):
@@ -436,12 +466,68 @@ class MySqlConection extends Conection
             endif;
             
             if($this->limit !== null):
+                
                 $query .= " LIMIT ".$this->limit;
+            endif;
+        endif;
+        return $query;
+    }
+    
+    /**
+     * Esta função constroe tada a query para execução no banco de dados
+     * @return String Query construida para perpetuar select
+     */
+    private function constructQueryObject()
+    {
+        $object = new \ArrayObject();
+        if($this->select !== null):
+            
+            $object['SELECT'] = str_replace("SELECT ", "", $this->select);
+            $count = 1;
+            $arrayFrom = array();
+            foreach ($this->from as $from):
+                
+                $vrgl = (count($this->from) === $count) ? "" : "," ;
+                array_push($arrayFrom,"{$from['table']} {$from['nickname']}{$vrgl}");
+                $count++;
+            endforeach;
+            
+            $object['FROM'] = $arrayFrom;
+            
+            if(!empty($this->joins)):
+                
+            endif;
+            
+            if(!empty($this->where)):
+                
+            endif;
+            
+            if(!empty($this->order)):
+                
+            endif;
+            
+            if(!empty($this->group)):
+                
+            endif;
+            
+            if($this->limit !== null):
+                
+                $object['LIMIT'] = $this->limit;
+            endif;
+            
+            if(!empty($this->toPrepare)):
+                
+                $bind = array();
+                foreach ($this->toPrepare as $prepare):
+                    
+                    array_push($bind, $prepare);
+                endforeach;
+                $object['BIND'] = $bind;
             endif;
             
         endif;
             
-        return $query;
+        return $object;
     }
     
     /**
@@ -472,5 +558,64 @@ class MySqlConection extends Conection
     {
         $filter = new Filters\FilterArrayObject(new \ArrayObject($this->from), new \ArrayIterator(array('table')), $table);
         return $filter->getObjFiltered();
+    }
+    
+    /**
+     * Set os valores para serem feitos os  BindValues
+     * @param Array $args array(':campo' => 'valor')
+     */
+    private function setToPrepare(array $args)
+    {
+        if(!empty($args)):
+            
+            foreach ($args as $prepare => $value):
+            
+                if(!in_array(array($prepare => $value), $this->toPrepare)):
+                    
+                    array_push($this->toPrepare, array($prepare => $value));
+                endif;
+            endforeach;
+        endif;
+    }
+    
+    /**
+     * Retorna uma string sem os marcadores bindValue (Ex.: :campos), ao invés disso retorna seus valores
+     * @param String $query String a ser convertida para substituição de dos :campos por seus valores
+     * @return String $query String tratada para exibição
+     */
+    private function getToPrepare($query)
+    {
+        if(!empty($query) && !empty($this->toPrepare)):
+            
+            foreach ($this->toPrepare as $prepare):
+                
+                foreach ($prepare as $bind => $value):
+            
+                    $query = str_replace($bind, $value, $query);
+                endforeach;
+            endforeach;
+        endif;
+        
+        return $query;
+    }
+    
+    /**
+     * Função registras os values para serem realizados no banco de dados
+    */
+    private function bindValues()
+    {
+        try
+        {
+            if(!empty($this->toPrepare) && $this->stmt instanceof \PDOStatement):
+                
+                foreach ($this->toPrepare as $bind => $value):
+                    
+                    $this->stmt->bindValue($bind, $value, \PDO::PARAM_STR);
+                endforeach;
+            endif;
+        } 
+        catch(\PDOException $ex) {
+            echo "ERRO AO REALIZAR OS BINDVALUE: ".$ex->getMessage();
+        }
     }
 }

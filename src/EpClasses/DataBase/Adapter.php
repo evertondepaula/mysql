@@ -115,7 +115,16 @@ class Adapter extends Conection
     }
     
     /**
-     * Construção de metodo para impor condição where na seleção de dados
+     * Condição having em banco de dados MySql
+     * @param array $args Lista de campos a serem feitos having
+     */
+    public function having(array $args)
+    {
+        return $this->adapter->having($args);
+    }
+    
+    /**
+     * Construção de método para impor condição where na seleção de dados
      * @param array $args campos a serem feitos where
      *                    ex.: array('campo' => 'valor')
      */
@@ -224,12 +233,15 @@ class Adapter extends Conection
     }
     
     /**
-     * Metodo retorna a string a ser submetida no bando de dados
-     * @return String
+     * Retorna a Query formada a ser submetida a base de dados
+     * @param int $operation Selecionará o tipo de retorno
+     *                       ::SQL_STRING - 1 retornará uma \String com a query (default)
+     *                       ::SQL_OBJECT - 2 retornará um \ArrayObject separado por procedimentos sql
+     * @return \String|\ArrayObject 
     */
-    public function getStringQuery()
+    public function getQuery($operation = 1)
     {
-        return $this->adapter->getStringQuery();
+        return $this->adapter->getQuery($operation);
     }
     
     /**

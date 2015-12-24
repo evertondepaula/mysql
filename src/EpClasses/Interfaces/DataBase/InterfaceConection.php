@@ -1,6 +1,6 @@
 <?php
 
-namespace EpClasses\Interfaces;
+namespace EpClasses\Interfaces\DataBase;
 
 /**
  * <b>InterfaceConection: </b> Obrigatóridade de métodos para estrutura de conexão e manipulação de dados ao banco de dados
@@ -13,6 +13,7 @@ interface InterfaceConection
     public function join(array $args);
     public function leftJoin(array $args);
     public function rightJoin(array $args);
+    public function having(array $args);
     public function where(array $args);
     public function order(array $args);
     public function group(array $args);
@@ -23,6 +24,6 @@ interface InterfaceConection
     public function procedure(array $args);
     public function fetch($type = null, $class = null);
     public function execute();
-    public function getStringQuery();
+    public function getQuery($operation = 1);
     public function getlastInsertId();
 }
