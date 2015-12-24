@@ -39,7 +39,7 @@ abstract class Conection implements InterfaceConection
      * @return Object MySqlConection|
      * @throws Exception ERRO de conexao
      */
-    public function getConstructForAdapter()
+    protected function getConstructForAdapter()
     {
         try
         {
@@ -125,6 +125,11 @@ abstract class Conection implements InterfaceConection
     abstract public function rightJoin(array $args);
     
     /**
+     * Obriga a implentação de método para implementar condição having no select ao bando de dados
+     */
+    abstract public function having(array $args);
+    
+    /**
      * Obriga a implentação de método para implementar condição where no select ao bando de dados
      */
     abstract public function where(array $args);
@@ -177,7 +182,7 @@ abstract class Conection implements InterfaceConection
     /**
      *  Obriga a implentação de método para conseguir a string da query formada pela objeto de execução da Query
      */
-    abstract public function getStringQuery();
+    abstract public function getQuery($operation = 1);
     
     /**
      * Obriga a implentação de método para conseguir o último id inserido no bando de dados
