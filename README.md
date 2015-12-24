@@ -1,8 +1,10 @@
-#### Class
+#### EpClassFrame
 
 - Auto: Everotn J Paula;
 - email: everton_to@live.com;
 - TAGs: Aplicações WEB, Helpers, PHP;
+- GitHub: EpClasses
+- Composer: ep-classes
 
 #### Conjunto de classes
 

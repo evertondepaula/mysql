@@ -59,7 +59,6 @@ class MySqlConection extends Conection
     /** @var String contém a procedure a ser executada*/
     private $procedure = null;
     
-    
     /**
      * Método construtor para conexao com banco de dados
      * @param \PDO $conection Conexao estabelcida com PDO com o bando de dados
@@ -526,7 +525,6 @@ class MySqlConection extends Conection
             endif;
             
         endif;
-            
         return $object;
     }
     
