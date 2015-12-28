@@ -6,24 +6,22 @@ require "vendor/autoload.php";
 use EpClasses\DataBase\Adapter;
 use EpClasses\DataBase\MySqlConection;
 
-$a = new Adapter();
 
-$a->select(array( 'users' => array( 'idUsers' => 'alias', 'nome', 'endereco' )))
-   ->functions(array( 
-                        "functionName1" => array( 
-                            "tabela1" =>  array( "parametro1", "parametro2" ), 
-                            "tabela2" =>  array( "parametro3", "parametro4" ), 
-                                          array("parametro_sem_tabela")
-                        ), 
-                        "functionName2" => array(
-                            "tabela1" => array("parametro1", "parametro2"), 
-                            "tabela2" => array( "parametro3", "parametro4" ), 
-                                         array("parametro_sem_tabela2")
-                        ), "alias"
-                    )
-                )
-   ->where("table.name = ? AND table.name > :parametro", array('everton', 'kol'))
-   ->limit(2);
+class Cliente extends Adapter
+{
+    
+    public function __construct() {
+        parent::__construct();
+    }
+    
+    public function getCliente()
+    {
+        $this->select(array( 'users u' => array( '*')))
+             ->where("u.nome = ? AND u.sobrenome = ?", array('everton', 'paula'))
+             ->limit(2);
+        var_dump($this->getQuery(MySqlConection::SQL_OBJECT));
+    }
+}
 
-
-var_dump($a->getQuery(MySqlConection::SQL_OBJECT));
+$cliente = new Cliente();
+$cliente->getCliente();

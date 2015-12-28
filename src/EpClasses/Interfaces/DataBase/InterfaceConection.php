@@ -8,22 +8,4 @@ namespace EpClasses\Interfaces\DataBase;
  */
 interface InterfaceConection
 {
-    public function select(array $args);
-    public function functions(array $args);
-    public function join(array $args);
-    public function leftJoin(array $args);
-    public function rightJoin(array $args);
-    public function having(array $args);
-    public function where($terms, array $parameters);
-    public function order(array $args);
-    public function group(array $args);
-    public function limit($args);
-    public function insert($table, array $args);
-    public function delete($table);
-    public function update($table, array $args);
-    public function procedure(array $args);
-    public function fetch($type = null, $class = null);
-    public function execute();
-    public function getQuery($operation = 1);
-    public function getlastInsertId();
 }

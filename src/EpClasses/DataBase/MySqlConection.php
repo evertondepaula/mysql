@@ -2,7 +2,6 @@
 
 namespace EpClasses\DataBase;
 
-use EpClasses\Helpers\Randomico;
 use EpClasses\Helpers\Filters;
 
 /**
@@ -86,22 +85,24 @@ class MySqlConection extends Conection
                 $countTable = 1;
                 foreach ($args as $table => $fields):
                     
-                    $nickname = $this->getFrom($table);
+                    $tableExplode = explode(" ", $table);
+                    $nickname = $this->getFrom($tableExplode[0]);
                     if(empty($nickname)):
+                        
                         $this->setFrom($table);
-                        $nickname = $this->getFrom($table);
+                        $nickname = $this->getFrom($tableExplode[0]);
                     endif;
-                    
+                    $nickname = ($nickname[0]['nickname'] !== null) ? $nickname[0]['nickname'] : $tableExplode[0];
                     $countFields = 1;
                     foreach ($fields as $field  => $alias):
                         
                         $vrgl = (count($fields) === $countFields && count($args) === $countTable ) ? "" : ",";
                         if(is_numeric($field)):
                             
-                            $this->select .= " {$table}.{$alias}{$vrgl}";
+                            $this->select .= " {$nickname}.{$alias}{$vrgl}";
                         else:
                             
-                            $this->select .= " {$table}.{$field} AS '{$alias}'{$vrgl}";
+                            $this->select .= " {$nickname}.{$field} AS '{$alias}'{$vrgl}";
                         endif; 
                     $countFields++;  
                     endforeach;
@@ -140,16 +141,18 @@ class MySqlConection extends Conection
 
                             $countFields = 1;
                             if(!is_numeric($table)):
-
-                                $nickname = $this->getFrom($table);
+                                
+                                $tableExplode = explode(" ", $table);
+                                $nickname = $this->getFrom($tableExplode[0]);
                                 if(empty($nickname)):
                                     $this->setFrom($table);
-                                    $nickname = $this->getFrom($table);
+                                    $nickname = $this->getFrom($tableExplode[0]);
                                 endif;
+                                $nickname = ($nickname[0]['nickname'] !== null) ? $nickname[0]['nickname'] : $tableExplode[0];
                                 foreach ($fields as $field):
 
                                     $vrgl = (count($fields) === $countFields && count($tables) === $countTable ) ? "" : ",";
-                                    $this->select .= "{$table}.{$field}{$vrgl}";
+                                    $this->select .= "{$nickname}.{$field}{$vrgl}";
                                     $countFields++;  
                                 endforeach;
                             else:
@@ -242,7 +245,7 @@ class MySqlConection extends Conection
                         $index++;
                     endif;
                 endforeach;
-                $this->where = $terms;
+                $this->where = ($this->where === null) ? $terms : $this->where . $terms;
             endif;
         }
         catch (\Exception $ex)
@@ -465,7 +468,7 @@ class MySqlConection extends Conection
             foreach ($this->from as $from):
                 
                 $vrgl = (count($this->from) === $count) ? "" : "," ;
-                $query .= " {$from['table']}{$vrgl}";
+                $query .= " {$from['table']} {$from['nickname']}{$vrgl}";
                 $count++;
             endforeach;
         
@@ -510,7 +513,7 @@ class MySqlConection extends Conection
             foreach ($this->from as $from):
                 
                 $vrgl = (count($this->from) === $count) ? "" : "," ;
-                array_push($arrayFrom,"{$from['table']}{$vrgl}");
+                array_push($arrayFrom,"{$from['table']} {$from['nickname']}");
                 $count++;
             endforeach;
             
@@ -562,10 +565,10 @@ class MySqlConection extends Conection
         $find = false;
         while(!$find):
             
-            $randomLetters = Randomico\Random::getRandomLetters(3, Randomico\Random::LOWERCASE);
             if(empty($this->getFrom($table))):
                 
-                array_push($this->from, array('table' => $table, 'nickname' => $randomLetters));
+                $table = explode(" ",$table);
+                array_push($this->from, array('table' => $table[0], 'nickname' => (isset($table[1])) ? $table[1] : null));
                 $find = true;
             endif;
         endwhile;

@@ -14,7 +14,7 @@ abstract class Conection implements InterfaceConection
     /**
      * Constante para arquivo de configuração
      */
-    const FILE_CONFIG = __DIR__.'/../../../app/config/database.xml';
+    const FILE_CONFIG = "/../../../app/config/database.xml";
     
     /** @var string Tipo de sgbd utilizado */
     private $drive = null;
@@ -89,103 +89,109 @@ abstract class Conection implements InterfaceConection
      */
     private function readConfigXML()
     {
-        $read = new Read\ReadXml();
-        $xml = $read->getArrayFromXml(self::FILE_CONFIG);
-        $this->drive = $xml->drive;
-        $this->host = $xml->host;
-        $this->dbname = $xml->dbname;
-        $this->port = $xml->port;
-        $this->user = $xml->user;
-        $this->password = $xml->password;
+        try{
+            $read = new Read\ReadXml();
+            $xml = $read->getArrayFromXml(__DIR__.self::FILE_CONFIG);
+            $this->drive = $xml->drive;
+            $this->host = $xml->host;
+            $this->dbname = $xml->dbname;
+            $this->port = $xml->port;
+            $this->user = $xml->user;
+            $this->password = $xml->password;
+        }  
+        catch (\Exception $ex)
+        {
+            echo "ERRO AO TENTAR LER ARQUIVO DE CONFIGURAÇÃO .XML: ". $ex->getMessage();
+        }
     }
     
     /**
      * Obriga a implentação de método para realizar select no bando de dados
      */
-    abstract public function select(array $args);
+    abstract protected function select(array $args);
     
     /**
      * Obriga a implentação de método para realizar functions no bando de dados
      */
-    abstract public function functions(array $args);
+    abstract protected function functions(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição join no select ao no bando de dados
      */
-    abstract public function join(array $args);
+    abstract protected function join(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição leftJoin no select ao no bando de dados
      */
-    abstract public function leftJoin(array $args);
+    abstract protected function leftJoin(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição rightJoin no select ao bando de dados
      */
-    abstract public function rightJoin(array $args);
+    abstract protected function rightJoin(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição having no select ao bando de dados
      */
-    abstract public function having(array $args);
+    abstract protected function having(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição where no select ao bando de dados
      */
-    abstract public function where($terms, array $parameters);
+    abstract protected function where($terms, array $parameters);
     
     /**
      * Obriga a implentação de método para implementar condição order no select ao bando de dados
      */
-    abstract public function order(array $args);
+    abstract protected function order(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição group no select ao bando de dados
      */
-    abstract public function group(array $args);
+    abstract protected function group(array $args);
     
     /**
      * Obriga a implentação de método para implementar condição limit no select ao bando de dados
      */
-    abstract public function limit($args);
+    abstract protected function limit($args);
     
     /**
      * Obriga a implentação de método para realizar inserts ao bando de dados
      */
-    abstract public function insert($table, array $args);
+    abstract protected function insert($table, array $args);
     
     /**
      * Obriga a implentação de método para realizar deletes ao bando de dados
      */
-    abstract public function delete($table);
+    abstract protected function delete($table);
     
     /**
      * Obriga a implentação de método para realizar updates ao bando de dados
      */
-    abstract public function update($table, array $args);
+    abstract protected function update($table, array $args);
     
     /**
      * Obriga a implentação de método para realizar procedures no bando de dados
      */
-    abstract public function procedure(array $args);
+    abstract protected function procedure(array $args);
     
     /**
      * Obriga a implentação de método para realizar fetchs de dados(consutlas)
      */
-    abstract public function fetch($type = null, $class = null);
+    abstract protected function fetch($type = null, $class = null);
     
     /**
      * Obriga a implentação de método para realizar execução de metodos no bando de dados
      */
-    abstract public function execute();
+    abstract protected function execute();
     
     /**
      *  Obriga a implentação de método para conseguir a string da query formada pela objeto de execução da Query
      */
-    abstract public function getQuery($operation = 1);
+    abstract protected function getQuery($operation = 1);
     
     /**
      * Obriga a implentação de método para conseguir o último id inserido no bando de dados
      */
-    abstract public function getlastInsertId();
+    abstract protected function getlastInsertId();
 }
