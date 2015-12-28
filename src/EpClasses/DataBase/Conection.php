@@ -132,7 +132,7 @@ abstract class Conection implements InterfaceConection
     /**
      * Obriga a implentação de método para implementar condição where no select ao bando de dados
      */
-    abstract public function where(array $args);
+    abstract public function where($terms, array $parameters);
     
     /**
      * Obriga a implentação de método para implementar condição order no select ao bando de dados

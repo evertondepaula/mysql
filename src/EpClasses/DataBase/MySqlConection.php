@@ -44,8 +44,8 @@ class MySqlConection extends Conection
     /** @var Array contém a string sql com todos os havings da aplicação */
     private $havings = array();
     
-    /** @var Array contém os valores de filtros where*/
-    private $where = array();
+    /** @var String $where contém os valores de filtros where*/
+    private $where = null;
     
     /** @var Array contém a configurações para order */
     private $order = array();
@@ -98,10 +98,10 @@ class MySqlConection extends Conection
                         $vrgl = (count($fields) === $countFields && count($args) === $countTable ) ? "" : ",";
                         if(is_numeric($field)):
                             
-                            $this->select .= " {$nickname[0]['nickname']}.{$alias}{$vrgl}";
+                            $this->select .= " {$table}.{$alias}{$vrgl}";
                         else:
                             
-                            $this->select .= " {$nickname[0]['nickname']}.{$field} AS '{$alias}'{$vrgl}";
+                            $this->select .= " {$table}.{$field} AS '{$alias}'{$vrgl}";
                         endif; 
                     $countFields++;  
                     endforeach;
@@ -149,7 +149,7 @@ class MySqlConection extends Conection
                                 foreach ($fields as $field):
 
                                     $vrgl = (count($fields) === $countFields && count($tables) === $countTable ) ? "" : ",";
-                                    $this->select .= "{$nickname[0]['nickname']}.{$field}{$vrgl}";
+                                    $this->select .= "{$table}.{$field}{$vrgl}";
                                     $countFields++;  
                                 endforeach;
                             else:
@@ -222,11 +222,33 @@ class MySqlConection extends Conection
 
     /**
      * Condição where em banco de dados MySql
-     * @param array $args Lista de condições WHERE da consulta
+     * @param String $terms Lista de condições WHERE da consulta
+     * @param array $parameters lista de parametros where a serem utilizados
     */
-    public function where(array $args)
+    public function where($terms, array $parameters)
     {
-        
+        try
+        {
+            if(!empty($terms)):
+                
+                $words = explode(" ",$terms);
+                $index = 0;
+                $args = array();
+                foreach ($words as $word):
+                    
+                    if($word[0] === ":" || $word[0] === "?"):
+                        
+                        $this->setToPrepare(array(($word[0] !== "?") ? $word : ":{$parameters[$index]}" => $parameters[$index]));
+                        $index++;
+                    endif;
+                endforeach;
+                $this->where = $terms;
+            endif;
+        }
+        catch (\Exception $ex)
+        {
+            echo "ERRO AO CONSTRUIR 'WHERE': ".$ex->getMessage();
+        }       
     }
     
     /**
@@ -410,8 +432,7 @@ class MySqlConection extends Conection
         unset($this->joins);
         $this->joins = array();
         
-        unset($this->where);
-        $this->where = array();
+        $this->where = null;
         
         unset($this->order);
         $this->order = array();
@@ -438,12 +459,13 @@ class MySqlConection extends Conection
     {
         $query = null;
         if($this->select !== null):
-            $query = $this->select." FROM";
             
+            $query = $this->select." FROM";
             $count = 1;
             foreach ($this->from as $from):
+                
                 $vrgl = (count($this->from) === $count) ? "" : "," ;
-                $query .= " {$from['table']} {$from['nickname']}{$vrgl}";
+                $query .= " {$from['table']}{$vrgl}";
                 $count++;
             endforeach;
         
@@ -451,9 +473,10 @@ class MySqlConection extends Conection
             if(!empty($this->joins)):
                 
             endif;
-            
-            if(!empty($this->where)):
+                        
+            if($this->where !== null):
                 
+                $this->select .= "WHERE {$this->where}";
             endif;
             
             if(!empty($this->order)):
@@ -487,7 +510,7 @@ class MySqlConection extends Conection
             foreach ($this->from as $from):
                 
                 $vrgl = (count($this->from) === $count) ? "" : "," ;
-                array_push($arrayFrom,"{$from['table']} {$from['nickname']}{$vrgl}");
+                array_push($arrayFrom,"{$from['table']}{$vrgl}");
                 $count++;
             endforeach;
             
@@ -497,8 +520,9 @@ class MySqlConection extends Conection
                 
             endif;
             
-            if(!empty($this->where)):
+            if($this->where !== null):
                 
+                $object['WHERE'] = $this->where;
             endif;
             
             if(!empty($this->order)):

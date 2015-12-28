@@ -14,7 +14,7 @@ interface InterfaceConection
     public function leftJoin(array $args);
     public function rightJoin(array $args);
     public function having(array $args);
-    public function where(array $args);
+    public function where($terms, array $parameters);
     public function order(array $args);
     public function group(array $args);
     public function limit($args);

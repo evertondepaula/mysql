@@ -8,6 +8,22 @@ use EpClasses\DataBase\MySqlConection;
 
 $a = new Adapter();
 
-$a->functions(array( "functionName1" => array( "tabela1" => array( "parametro1", "parametro2" ), "tabela2" => array( "parametro3", "parametro4" ), array("parametro_sem_tabela") ), "functionName2" => array( "tabela1" => array( "parametro1", "parametro2" ), "tabela2" => array( "parametro3", "parametro4" ), array("parametro_sem_tabela2") ), "alias" ));
-$a->limit(2);
+$a->select(array( 'users' => array( 'idUsers' => 'alias', 'nome', 'endereco' )))
+   ->functions(array( 
+                        "functionName1" => array( 
+                            "tabela1" =>  array( "parametro1", "parametro2" ), 
+                            "tabela2" =>  array( "parametro3", "parametro4" ), 
+                                          array("parametro_sem_tabela")
+                        ), 
+                        "functionName2" => array(
+                            "tabela1" => array("parametro1", "parametro2"), 
+                            "tabela2" => array( "parametro3", "parametro4" ), 
+                                         array("parametro_sem_tabela2")
+                        ), "alias"
+                    )
+                )
+   ->where("table.name = ? AND table.name > :parametro", array('everton', 'kol'))
+   ->limit(2);
+
+
 var_dump($a->getQuery(MySqlConection::SQL_OBJECT));

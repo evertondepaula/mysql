@@ -47,7 +47,7 @@ class Adapter extends Conection
     public function select(array $args)
     {
         $this->adapter->select($args);
-        return $this->adapter;
+        return $this;
     }
     
     /**
@@ -84,7 +84,7 @@ class Adapter extends Conection
     public function functions(array $args)
     {
         $this->adapter->functions($args);
-        return $this->adapter;
+        return $this;
     }
 
     /**
@@ -125,12 +125,16 @@ class Adapter extends Conection
     
     /**
      * Construção de método para impor condição where na seleção de dados
-     * @param array $args campos a serem feitos where
-     *                    ex.: array('campo' => 'valor')
+     * @param String $terms String contendo as condições where do select ex.:
+     *                  <b>"tabela.campo1 = tabela.campo2 AND tabela.campo1 > ? ou ainda :parametro1"</b>
+     *                  O uso do nome da tabela é obrigatório para o bom funionamento da consulta
+     *@param Array $parameters Verifica no termo os pontos :parametro ou ? e substitui pelo parametros em array, no caso do uso de ? ordem do array deve ser a mesma da
+     *                          inserção dos pontos ? na strign $terms
      */
-    public function where(array $args)
+    public function where($terms, array $parameters)
     {
-        return $this->adapter->where($args);
+        $this->adapter->where($terms, $parameters);
+        return $this;
     }
     
     /**
@@ -158,7 +162,7 @@ class Adapter extends Conection
     public function limit($args)
     {
         $this->adapter->limit($args);
-        return $this->adapter;
+        return $this;
     }
     
     /**
