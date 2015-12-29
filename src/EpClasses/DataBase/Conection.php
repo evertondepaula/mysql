@@ -16,24 +16,6 @@ abstract class Conection implements InterfaceConection
      */
     const FILE_CONFIG = "/../../../app/config/database.xml";
     
-    /** @var string Tipo de sgbd utilizado */
-    private $drive = null;
-    
-    /** @var string Local do bando de dados */
-    private $host = null;
-    
-    /** @var Nome da base de dados a ser explorada */
-    private $dbname = null;
-    
-    /** @var Porta de conexao do bando de dados */
-    private $port = null;
-    
-    /** @var Usuário registrado no bando de dados para manipulacão de dados */
-    private $user = null;
-    
-    /** @var Senha do usuário registrado no bando de dados*/
-    private $password = null;
-
     /**
      * Ao construir a classe é feita a tentativa de estabelecer conexão com a base de dados, bem como determinar qual o banco de dados que será trabalhado
      * @return Object MySqlConection|
@@ -57,11 +39,11 @@ abstract class Conection implements InterfaceConection
      */
     private function getDbInstance()
     {
-        $this->readConfig();
-        switch ($this->drive):
+        $config = $this->readConfig();
+        switch ($config->drive):
             case "pdo_mysql":
 
-                return new MySqlConection(new \PDO("mysql:host={$this->host};dbname={$this->dbname};port={$this->port}", $this->user, $this->password));
+                return new MySqlConection(new \PDO("mysql:host={$config->host};dbname={$config->dbname};port={$config->port}", $config->user, $config->password));
             default :
                 
                 return null;
@@ -91,13 +73,7 @@ abstract class Conection implements InterfaceConection
     {
         try{
             $read = new Read\ReadXml();
-            $xml = $read->getArrayFromXml(__DIR__.self::FILE_CONFIG);
-            $this->drive = $xml->drive;
-            $this->host = $xml->host;
-            $this->dbname = $xml->dbname;
-            $this->port = $xml->port;
-            $this->user = $xml->user;
-            $this->password = $xml->password;
+            return $read->getArrayFromXml(__DIR__.self::FILE_CONFIG);
         }  
         catch (\Exception $ex)
         {
@@ -173,7 +149,7 @@ abstract class Conection implements InterfaceConection
     /**
      * Obriga a implentação de método para realizar procedures no bando de dados
      */
-    abstract protected function procedure(array $args);
+    abstract protected function procedure(array $args, $type = null);
     
     /**
      * Obriga a implentação de método para realizar fetchs de dados(consutlas)
@@ -194,4 +170,9 @@ abstract class Conection implements InterfaceConection
      * Obriga a implentação de método para conseguir o último id inserido no bando de dados
      */
     abstract protected function getlastInsertId();
+    
+    /**
+     * Obriga a implentação de método para limpar todos as propriedades de consultadas já elaborardas
+     */
+    abstract protected function clear();
 }

@@ -68,7 +68,7 @@ class Adapter extends Conection
      *                                       "tabela2 t2" => array(<br/>
      *                                           "parametro3", "parametro4"<br/>
      *                                       ),<br/>
-     *                                       array("parametro_sem_tabela")<br/>
+     *                                       array("? ou :parametro" => "valor_parametro")<br/>
      *                                   ),<br/>
      *                               "functionName2" =><br/>
      *                                   array(<br/>
@@ -78,7 +78,7 @@ class Adapter extends Conection
      *                                       "tabela2" => array(<br/>
      *                                           "parametro3", "parametro4"<br/>
      *                                       ),<br/>
-     *                                       array("parametro_sem_tabela")<br/>
+     *                                       array("? ou :parametro" => "valor_parametro")<br/>
      *                                   ), "alias"<br/>
      *                               )</b><br/>
      *                    O primeiro array deve conter o nome da função<br/>
@@ -134,6 +134,7 @@ class Adapter extends Conection
      * @param String $terms String contendo as condições where do select ex.:
      *                  <b>"tabela.campo1 = tabela.campo2 AND tabela.campo1 > ? ou ainda :parametro1"</b><br/>
      *                  O uso do nome da tabela é obrigatório caso não seja colocado seu apelido na método <b>select</b>.<br/>
+     *                  <b>Observação: Você deve utilizar a anotação :parametro ou ?, se existir a mistura das notações um erro retornará do bind dos parâmetros.</b><br/>
      *@param Array $parameters Verifica no termo os pontos :parametro ou ? e substitui pelo parametros em array, no caso do uso de ? ordem do array deve ser a mesma da
      *                          inserção dos pontos ? na string $terms
      */
@@ -144,21 +145,25 @@ class Adapter extends Conection
     }
     
     /**
-     * Construção de metodo para impor condição order na seleção de dados
-     * @param array $args campos a serem feitos order ex.: array('campo' => 'asc')
+     * Construção de metodo para impor condição order by na seleção de dados
+     * @param array $args campos a serem feitos order by
+     *  <b>ex.: array('apelido.campo' => 'ASC ou DESC') ou array('u.campo'), neste último caso o sistema ordenará automaticamente Ascendente (ASC)</b>
      */
     protected function order(array $args)
     {
-        return $this->adapter->order($args);   
+        $this->adapter->order($args);   
+        return $this;
     }
     
     /**
-     * Construção de metodo para impor condição group na seleção de dados
-     * @param array $args campos a serem feitos grupo ex.: array('campo', 'campo')
+     * Construção de metodo para impor condição group by na seleção de dados
+     * @param array $args campos a serem feitos grupo 
+     *  <b>ex.:array('u.campo', 'table.campo')</b>
      */
     protected function group(array $args)
     {
-        return $this->adapter->group($args);
+        $this->adapter->group($args);
+        return $this;
     }
     
     /**
@@ -203,34 +208,50 @@ class Adapter extends Conection
     }
     
     /**
-     * Construção de metodo para procedures de dados
-     * @param array $args Nome da procedure, valores fixos que serão utilizados como parâmetros
-     *                    <b>ex.: array(
-     *                          'procedureName' => array(
-     *                                  'parametro1', 'parametro2', '...'
-     *                              )
-     *                         );</b>
-     *                    O primeiro array deve conter o nome da procedure
-     *                    Este array aponta para um segundo que conterá os valores dos parametros
+     * Construção de método para procedures de dados
+     * @param array $args Nome da procedure, valores fixos que serão utilizados como parâmetros<br/>
+     *                    <b>ex.: array(<br/>
+     *                          'procedureName' => <br/>
+     *                              array(<br/>
+     *                                  ':v1' => 'valor_do_parametro', <br/>
+     *                                  ':v2' => 'valor_do_parametro2'<br/>
+     *                              )<br/>
+     *                         );</b><br/>
+     *                    <b>Observação: pode ser usado '?' como referência, neste caso a chave indice do array será única.<br/>
+     *                    ex.:array(<br/>
+     *                          'procedureName' => <br/>
+     *                              array(<br/>
+     *                                  '?' => array(<br/>
+     *                                      'valor_do_parametro','valor_do_parametro2')<br/>
+     *                                      )<br/>
+     *                               );<br/>
+     *                    O primeiro array deve conter o nome da procedure<br/>
+     *                    Este array aponta para um segundo que conterá em sua chave o bind para o valor podendo ser ? ou :parametro,<br/>
+     *                    O valor de cada chave é o parametro passado para a procedure.<br/>
+     * @param Object $type Tipo de fetch a ser realizado<br/>
+     *                    PDO::FETCH_ASSOC<br/>
+     *                    PDO::FETCH_BOTH<br/>
+     *                    PDO::FETCH_CLASS<br/>
+     *                    e outros<br/>
      */
-    protected function procedure(array $args)
+    protected function procedure(array $args, $type = null)
     {
-        return $this->adapter->procedure($args);
+        return $this->adapter->procedure($args, $type);
     }
     
     /**
-     * Serialização dos valores recebido de select, usar após já ter elaborado a cadeia de construção do método <b>->select()</b>
-     * @param Object $type Tipo de fetch a ser realizado
-     *                    PDO::FETCH_ASSOC
-     *                    PDO::FETCH_BOTH
-     *                    PDO::FETCH_CLASS
-     *                    e outros
-     * @param String $class Indica a qual object deseja-se transforma o retorno da consulta
-     * @return Object|Array
+     * Serialização dos valores recebido de select, usar após já ter elaborado a cadeia de construção do método <b>select</b><br/>
+     * @param Object $type Tipo de fetch a ser realizado<br/>
+     *                    PDO::FETCH_ASSOC<br/>
+     *                    PDO::FETCH_BOTH<br/>
+     *                    PDO::FETCH_CLASS<br/>
+     *                    e outros<br/>
+     * @param String $class Indica a qual object deseja-se transforma o retorno da consulta<br/>
+     * @return Object|Array<br/>
      */
     protected function fetch($type = null, $class = null)
     {
-        return $this->adapter->fetch($class, $type);
+        return $this->adapter->fetch($type, $class);
     }
     
     /**
@@ -261,5 +282,15 @@ class Adapter extends Conection
     protected function getlastInsertId()
     {
         return $this->adapter->getlastInsertId();
+    }
+    
+    /**
+     * Metodo limpa todas as propriedades do \Adapter, deixando limpo para proxima consulta<br/>
+     * <b>Este método é executado automaticamente após cada fetch() ou execute()</b>
+    */
+    protected function clear()
+    {
+        $this->adapter->clear();
+        return this;
     }
 }

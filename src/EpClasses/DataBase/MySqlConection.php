@@ -156,11 +156,11 @@ class MySqlConection extends Conection
                                     $countFields++;  
                                 endforeach;
                             else:
-                                foreach ($fields as $field):
+                                foreach ($fields as $bind => $value):
 
                                     $vrgl = (count($fields) === $countFields && count($tables) === $countTable ) ? "" : ",";
-                                    $this->setToPrepare(array(":{$field}" => $field));
-                                    $this->select .= ":{$field}{$vrgl}";
+                                    $this->setToPrepare(array($bind => $value));
+                                    $this->select .= "{$bind}{$vrgl}";
                                     $countFields++;  
                                 endforeach;
                             endif;
@@ -236,14 +236,21 @@ class MySqlConection extends Conection
                 
                 $words = explode(" ",$terms);
                 $index = 0;
-                $args = array();
+                $itsLike = false;
                 foreach ($words as $word):
                     
-                    if($word[0] === ":" || $word[0] === "?"):
+                    $posParam = strripos($word, "?");
+                    $posWord = strripos($word, ":");
+                    if($posWord !== false || $posParam !== false):
                         
-                        $this->setToPrepare(array(($word[0] !== "?") ? $word : ":{$parameters[$index]}" => $parameters[$index]));
+                        $word = str_replace(array("%","'"," "),"",$word);
+                        $this->setToPrepare(array( $word => ($itsLike !== true) ? $parameters[$index] : "%{$parameters[$index]}%"));
                         $index++;
+                        $itsLike = false;
+                    elseif(strtoupper($word) === "LIKE"):
+                        $itsLike = true;
                     endif;
+                    
                 endforeach;
                 $this->where = ($this->where === null) ? $terms : $this->where . $terms;
             endif;
@@ -260,7 +267,25 @@ class MySqlConection extends Conection
     */
     public function order(array $args)
     {
-        
+        try
+        {
+            if(!empty($args)):
+
+                foreach ($args as $field => $value):
+
+                    if(is_numeric($field)):
+                        $field = $value;
+                        $value = "ASC";
+                    endif;  
+                    
+                    array_push($this->order, array($field => strtoupper($value)));
+                endforeach;
+            endif;
+        }
+        catch(\Exception $ex)
+        {
+            echo "ERRO AO CONSTRUIR 'ORDER BY': ".$ex->getMessage();
+        }
     }
     
     /**
@@ -269,7 +294,20 @@ class MySqlConection extends Conection
     */
     public function group(array $args)
     {
-        
+        try
+        {
+            if(!empty($args)):
+                
+                foreach ($args as $field):
+                    
+                    array_push($this->group, $field);
+                endforeach;
+            endif;
+        }
+        catch (\Exception $ex)
+        {
+            echo "ERRO AO MONTAR GROUP BY: ".$ex->getMessage();
+        }
     }
     
     /**
@@ -323,10 +361,54 @@ class MySqlConection extends Conection
     /**
      * Chama procedures no banco de dados
      * @param Array $arg argumentos com nome da procedure
+     * @param Object $type Tipo de fetch a ser realizado
+     *                    PDO::FETCH_ASSOC
+     *                    PDO::FETCH_BOTH
+     *                    PDO::FETCH_CLASS
+     *                    e outros
      */
-    public function procedure(array $arg)
+    public function procedure(array $args, $type = null)
     {
-        
+        try
+        {
+            if(is_array($args) && !empty($args)):
+                
+                $this->clear();
+                $this->select = "CALL";
+                foreach ($args as $procedure => $fields):
+                    
+                    $this->select .= " {$procedure}(";
+                    $countBinds = 1;
+                    foreach ($fields as $bind => $value):
+                    
+                        if($bind === "?"):
+                            
+                            $countValues = 1;
+                            foreach ($value as $val):
+                                
+                                $vrgl = (count($value) === $countValues) ? "" : ",";
+                                $this->setToPrepare(array($bind => $val));
+                                $this->select .= "{$bind}{$vrgl}";
+                                $countValues++;
+                            endforeach;
+                        else:
+                            
+                            $vrgl = (count($fields) === $countBinds) ? "" : ",";
+                            $this->setToPrepare(array($bind => $value));
+                            $this->select .= "{$bind}{$vrgl}";
+                            $countBinds++;
+                        endif;
+                    endforeach;
+                endforeach;
+                $this->select .= ")";
+                return $this->fetch($type);
+            endif;
+            return null;
+        }
+        catch (\Exception $ex)
+        {
+            echo "ERRO DE CONSTRUÇÃO DE SQL(PROCEDURE): ".$ex->getMessage();
+        }
     }
     
     /**
@@ -341,36 +423,42 @@ class MySqlConection extends Conection
      */
     public function fetch($type = null , $class = null)
     {
-        $this->query = $this->constructQueryString();
-        
-        if($this->query !== null):
-            
-            $callback = null;
-            $this->stmt = $this->dbInstance->prepare($this->query);
-            $this->bindValues();
+        try
+        {
+            $this->query = $this->constructQueryString();
+            if($this->query !== null):
+                
+                $callback = null;
+                $this->stmt = $this->dbInstance->prepare($this->query);
+                $this->bindValues();
 
-            if($this->stmt->execute()):
+                if($this->execute()):
 
-                if($type === null && $class === null):
+                    if($type === null && $class === null):
 
-                    $callback = $this->stmt->fetchAll();
-                elseif($class !== null && $type !== null):
+                        $callback = $this->stmt->fetchAll();
+                    elseif($class !== null && $type !== null):
 
-                    $callback = $this->stmt->fetchAll($type, $class);
-                elseif(is_string($type) && $class === null):
+                        $callback = $this->stmt->fetchAll($type, $class);
+                    elseif(is_string($type) && $class === null):
 
-                    $callback = $this->stmt->fetchAll(\PDO::FETCH_CLASS, $type);
-                else:
-
-                    $callback = $this->stmt->fetchAll($type);
+                        $callback = $this->stmt->fetchAll(\PDO::FETCH_CLASS, $type);
+                    else:
+                        
+                        $callback = $this->stmt->fetchAll($type);
+                    endif;
                 endif;
-            endif;
 
-            $this->clear();
-            
-            return $callback;
-        endif;
-        return array('AVISO'=>'É preciso estabelecer o método de pesquisa novamente, após a execução do fetch() ou execute(), a consulta é deletada');
+                $this->clear();
+
+                return $callback;
+            endif;
+            return array('AVISO'=>'É preciso estabelecer o método de pesquisa novamente, após a execução do fetch() ou execute(), a consulta é deletada');
+        }
+        catch(\Exception $ex)
+        {
+            echo "ERRO AO TENTAR FAZER FETCH DOS DADOS: ".$ex->getMessage();
+        }
     }
     
     /**
@@ -425,7 +513,7 @@ class MySqlConection extends Conection
     /**
      * Limpar as propriedades da Classe
      */
-    private function clear()
+    public function clear()
     {
         $this->select = null;
         
@@ -437,11 +525,11 @@ class MySqlConection extends Conection
         
         $this->where = null;
         
+        unset($this->group);
+        $this->group = array();
+        
         unset($this->order);
         $this->order = array();
-        
-        unset($this->group);
-        $this->group = array();    
         
         $this->limit = null;
         
@@ -463,31 +551,53 @@ class MySqlConection extends Conection
         $query = null;
         if($this->select !== null):
             
-            $query = $this->select." FROM";
-            $count = 1;
-            foreach ($this->from as $from):
-                
-                $vrgl = (count($this->from) === $count) ? "" : "," ;
-                $query .= " {$from['table']} {$from['nickname']}{$vrgl}";
-                $count++;
-            endforeach;
+            $query = $this->select;
         
-            
+            if(!empty($this->from)):
+                
+                $query .= " FROM";
+                $count = 1;
+                foreach ($this->from as $from):
+
+                    $vrgl = (count($this->from) === $count) ? "" : "," ;
+                    $query .= " {$from['table']} {$from['nickname']}{$vrgl}";
+                    $count++;
+                endforeach;
+            endif;
+                    
             if(!empty($this->joins)):
                 
             endif;
                         
             if($this->where !== null):
                 
-                $this->select .= "WHERE {$this->where}";
+                $query .= " WHERE {$this->where}";
+            endif;
+            
+            if(!empty($this->group)):
+                $count = 1;
+                $query .= " GROUP BY";
+                foreach ($this->group as $field):
+                    
+                    $vrgl = (count($this->group) === $count) ? "" : "," ;
+                    $query .= " {$field}{$vrgl}";
+                    $count++;
+                endforeach;
             endif;
             
             if(!empty($this->order)):
                 
-            endif;
-            
-            if(!empty($this->group)):
-                
+                $count = 1;
+                $query .= " ORDER BY";
+                    foreach ($this->order as $fields):
+                        
+                        foreach($fields as $field => $value):
+
+                            $vrgl = (count($this->order) === $count) ? "" : "," ;
+                            $query .= " {$field} {$value}{$vrgl}";
+                            $count++;
+                        endforeach;
+                    endforeach;
             endif;
             
             if($this->limit !== null):
@@ -508,16 +618,19 @@ class MySqlConection extends Conection
         if($this->select !== null):
             
             $object['SELECT'] = str_replace("SELECT ", "", $this->select);
-            $count = 1;
-            $arrayFrom = array();
-            foreach ($this->from as $from):
-                
-                $vrgl = (count($this->from) === $count) ? "" : "," ;
-                array_push($arrayFrom,"{$from['table']} {$from['nickname']}");
-                $count++;
-            endforeach;
             
-            $object['FROM'] = $arrayFrom;
+            if(!empty($this->from)):
+                
+                $count = 1;
+                $arrayFrom = array();
+                foreach ($this->from as $from):
+
+                    $vrgl = (count($this->from) === $count) ? "" : "," ;
+                    array_push($arrayFrom,"{$from['table']} {$from['nickname']}");
+                    $count++;
+                endforeach;
+                $object['FROM'] = $arrayFrom;
+            endif;
             
             if(!empty($this->joins)):
                 
@@ -528,12 +641,14 @@ class MySqlConection extends Conection
                 $object['WHERE'] = $this->where;
             endif;
             
-            if(!empty($this->order)):
-                
-            endif;
-            
             if(!empty($this->group)):
                 
+                $object['GROUP BY'] = $this->group;
+            endif;
+            
+            if(!empty($this->order)):
+                
+                $object['ORDER BY'] = $this->order;
             endif;
             
             if($this->limit !== null):
@@ -615,8 +730,14 @@ class MySqlConection extends Conection
             foreach ($this->toPrepare as $prepare):
                 
                 foreach ($prepare as $bind => $value):
-            
-                    $query = str_replace($bind, $value, $query);
+                    
+                    if($bind === "?"):
+                        
+                        $query = preg_replace("/\\{$bind}/", ($value[0] === "%") ? "'{$value}'": $value , $query,1);
+                    else:
+                        
+                        $query = str_replace($bind, ($value[0] === "%") ? "'{$value}'": $value, $query);
+                    endif;
                 endforeach;
             endforeach;
         endif;
@@ -632,10 +753,21 @@ class MySqlConection extends Conection
         try
         {
             if(!empty($this->toPrepare) && $this->stmt instanceof \PDOStatement):
+            
+                $param = 0;
+                foreach ($this->toPrepare as $key => $binds):
+                        
+                    foreach ($binds as $bind => $value):
                 
-                foreach ($this->toPrepare as $bind => $value):
-                    
-                    $this->stmt->bindValue($bind, $value, \PDO::PARAM_STR);
+                        $param++;
+                        if($bind === "?"):
+                            
+                            $this->stmt->bindValue($param, $value, \PDO::PARAM_STR|\PDO::PARAM_INPUT_OUTPUT);
+                        else:
+                            
+                            $this->stmt->bindValue($bind , $value, \PDO::PARAM_STR|\PDO::PARAM_INPUT_OUTPUT);
+                        endif;
+                    endforeach;
                 endforeach;
             endif;
         } 
