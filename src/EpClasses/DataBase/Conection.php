@@ -94,17 +94,17 @@ abstract class Conection implements InterfaceConection
     /**
      * Obriga a implentação de método para implementar condição join no select ao no bando de dados
      */
-    abstract protected function join(array $args);
+    abstract protected function join(array $args, array $fields = null);
     
     /**
      * Obriga a implentação de método para implementar condição leftJoin no select ao no bando de dados
      */
-    abstract protected function leftJoin(array $args);
+    abstract protected function leftJoin(array $args, array $fields = null);
     
     /**
      * Obriga a implentação de método para implementar condição rightJoin no select ao bando de dados
      */
-    abstract protected function rightJoin(array $args);
+    abstract protected function rightJoin(array $args, array $fields = null);
     
     /**
      * Obriga a implentação de método para implementar condição having no select ao bando de dados

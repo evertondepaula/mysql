@@ -94,30 +94,57 @@ class Adapter extends Conection
     }
 
     /**
-     * Construção de metodo para impor condição join na seleção de dados
-     * @param array $args campos a serem feitos join ex.: array('a.campo' => 'b.campo')
+     * Construção de método para impor condição INNER JOIN na seleção de dados<br/><b>Limitado a apenas uma tabela por método envocado join()</b>
+     * @param Array $args Tabela para JOIN e Condição, Limitado a apenas uma tabela por método <b>join</b><br/>
+     *                              <b>ex.: array('tableName c' => <br/>
+     *                                             array('c.campo = u.campo')<br/>
+     *                                           )</b><br/>
+     *                              Lembrando que o o apelido (nickname) para a tabela é opcional, é preciso ficar atento, <br/>
+     *                              Caso não use o apelido é necessário escrever no array de condição o nome completo da tabela . campo<br/>
+     *                              Também é possível usar mais de uma condição, basta inserir mais valores no segundo array.
+     * @param Array $fields Campos de retorno da Tabela Join, <b>Por default retornará todos os campos *</b><br/>
+     *                              <b>ex. de uso: array("campo1" => "alias", "campo2", "campo3" => "alias3")</b>
      */
-    protected function join(array $args)
+    protected function join(array $args, array $fields = null)
     {
-        return $this->adapter->join($args);
+        $this->adapter->join($args, $fields);
+        return $this;
     }
     
     /**
-     * Construção de metodo para impor condição leftJoin na seleção de dados
-     * @param array $args campos a serem feitos leftJoin ex.: array('a.campo' => 'b.campo')
+     * Construção de método para impor condição LEFT JOIN na seleção de dados<br/><b>Limitado a apenas uma tabela por método envocado join()</b>
+     * @param Array $args Tabela para JOIN e Condição, Limitado a apenas uma tabela por método <b>join</b><br/>
+     *                              <b>ex.: array('tableName c' => <br/>
+     *                                             array('c.campo = u.campo')<br/>
+     *                                           )</b><br/>
+     *                              Lembrando que o o apelido (nickname) para a tabela é opcional, é preciso ficar atento, <br/>
+     *                              Caso não use o apelido é necessário escrever no array de condição o nome completo da tabela . campo<br/>
+     *                              Também é possível usar mais de uma condição, basta inserir mais valores no segundo array.
+     * @param Array $fields Campos de retorno da Tabela Join, <b>Por default retornará todos os campos *</b><br/>
+     *                              <b>ex. de uso: array("campo1" => "alias", "campo2", "campo3" => "alias3")</b>
      */
-    protected function leftJoin(array $args)
+    protected function leftJoin(array $args, array $fields = null)
     {
-        return $this->adapter->leftJoin($args);
+        $this->adapter->leftJoin($args);
+        return $this;
     }
     
     /**
-     * Construção de metodo para impor condição rightJoin na seleção de dados
-     * @param array $args campos a serem feitos rightJoin ex.: array('a.campo' => 'b.campo')
+     * Construção de método para impor condição RIGHT JOIN na seleção de dados<br/><b>Limitado a apenas uma tabela por método envocado join()</b>
+     * @param Array $args Tabela para JOIN e Condição, Limitado a apenas uma tabela por método <b>join</b><br/>
+     *                              <b>ex.: array('tableName c' => <br/>
+     *                                             array('c.campo = u.campo')<br/>
+     *                                           )</b><br/>
+     *                              Lembrando que o o apelido (nickname) para a tabela é opcional, é preciso ficar atento, <br/>
+     *                              Caso não use o apelido é necessário escrever no array de condição o nome completo da tabela . campo<br/>
+     *                              Também é possível usar mais de uma condição, basta inserir mais valores no segundo array.
+     * @param Array $fields Campos de retorno da Tabela Join, <b>Por default retornará todos os campos *</b><br/>
+     *                              <b>ex. de uso: array("campo1" => "alias", "campo2", "campo3" => "alias3")</b>
      */
-    protected function rightJoin(array $args)
+    protected function rightJoin(array $args, array $fields = null)
     {
-        return $this->adapter->rightJoin($args);
+        $this->adapter->rightJoin($args);
+        return $this;
     }
     
     /**
@@ -210,24 +237,12 @@ class Adapter extends Conection
     /**
      * Construção de método para procedures de dados
      * @param array $args Nome da procedure, valores fixos que serão utilizados como parâmetros<br/>
-     *                    <b>ex.: array(<br/>
+     *                    <b>ex.:array(<br/>
      *                          'procedureName' => <br/>
-     *                              array(<br/>
-     *                                  ':v1' => 'valor_do_parametro', <br/>
-     *                                  ':v2' => 'valor_do_parametro2'<br/>
-     *                              )<br/>
-     *                         );</b><br/>
-     *                    <b>Observação: pode ser usado '?' como referência, neste caso a chave indice do array será única.<br/>
-     *                    ex.:array(<br/>
-     *                          'procedureName' => <br/>
-     *                              array(<br/>
-     *                                  '?' => array(<br/>
-     *                                      'valor_do_parametro','valor_do_parametro2')<br/>
-     *                                      )<br/>
-     *                               );<br/>
+     *                              array('valor_do_parametro','valor_do_parametro2')<br/>
+     *                               );<br/></b>
      *                    O primeiro array deve conter o nome da procedure<br/>
-     *                    Este array aponta para um segundo que conterá em sua chave o bind para o valor podendo ser ? ou :parametro,<br/>
-     *                    O valor de cada chave é o parametro passado para a procedure.<br/>
+     *                    Este array aponta para um segundo que conterá os valores dos parametros,<br/>
      * @param Object $type Tipo de fetch a ser realizado<br/>
      *                    PDO::FETCH_ASSOC<br/>
      *                    PDO::FETCH_BOTH<br/>

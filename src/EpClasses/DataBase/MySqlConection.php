@@ -85,14 +85,7 @@ class MySqlConection extends Conection
                 $countTable = 1;
                 foreach ($args as $table => $fields):
                     
-                    $tableExplode = explode(" ", $table);
-                    $nickname = $this->getFrom($tableExplode[0]);
-                    if(empty($nickname)):
-                        
-                        $this->setFrom($table);
-                        $nickname = $this->getFrom($tableExplode[0]);
-                    endif;
-                    $nickname = ($nickname[0]['nickname'] !== null) ? $nickname[0]['nickname'] : $tableExplode[0];
+                    $nickname = $this->makeTableFrom($table);
                     $countFields = 1;
                     foreach ($fields as $field  => $alias):
                         
@@ -142,13 +135,7 @@ class MySqlConection extends Conection
                             $countFields = 1;
                             if(!is_numeric($table)):
                                 
-                                $tableExplode = explode(" ", $table);
-                                $nickname = $this->getFrom($tableExplode[0]);
-                                if(empty($nickname)):
-                                    $this->setFrom($table);
-                                    $nickname = $this->getFrom($tableExplode[0]);
-                                endif;
-                                $nickname = ($nickname[0]['nickname'] !== null) ? $nickname[0]['nickname'] : $tableExplode[0];
+                                $nickname = $this->makeTableFrom($table);
                                 foreach ($fields as $field):
 
                                     $vrgl = (count($fields) === $countFields && count($tables) === $countTable ) ? "" : ",";
@@ -189,29 +176,32 @@ class MySqlConection extends Conection
     
     /**
      * Condição Join em banco de dados MySql
-     * @param array $args Lista de campos a serem feito join
+     * @param Array $args Tabela e condição de join
+     * @param Array $fields Lista de campos a serem retornados da tabela join
     */
-    public function join(array $args)
+    public function join(array $args, array $fields = null)
     {
-        
+        $this->constructJoins($args, $fields, "INNER JOIN");
     }
     
     /**
-     * Condição leftJoin em banco de dados MySql
-     * @param array $args Lista de campos a serem feito leftJoin
+     * Condição Join em banco de dados MySql
+     * @param Array $args Tabela e condição de join
+     * @param Array $fields Lista de campos a serem retornados da tabela join
     */
-    public function leftJoin(array $args)
+    public function leftJoin(array $args, array $fields = null)
     {
-        
+        $this->constructJoins($args, $fields, "LEFT JOIN");
     }
     
     /**
-     * Condição rightJoin em banco de dados MySql
-     * @param array $args Lista de campos a serem feitos rightJoin
+     * Condição Join em banco de dados MySql
+     * @param Array $args Tabela e condição de join
+     * @param Array $fields Lista de campos a serem retornados da tabela join
     */
-    public function rightJoin(array $args)
+    public function rightJoin(array $args, array $fields = null)
     {
-        
+        $this->constructJoins($args, $fields, "RIGHT JOIN");
     }
     
     /**
@@ -379,25 +369,12 @@ class MySqlConection extends Conection
                     
                     $this->select .= " {$procedure}(";
                     $countBinds = 1;
-                    foreach ($fields as $bind => $value):
+                    foreach ($fields as $value):
                     
-                        if($bind === "?"):
-                            
-                            $countValues = 1;
-                            foreach ($value as $val):
-                                
-                                $vrgl = (count($value) === $countValues) ? "" : ",";
-                                $this->setToPrepare(array($bind => $val));
-                                $this->select .= "{$bind}{$vrgl}";
-                                $countValues++;
-                            endforeach;
-                        else:
-                            
-                            $vrgl = (count($fields) === $countBinds) ? "" : ",";
-                            $this->setToPrepare(array($bind => $value));
-                            $this->select .= "{$bind}{$vrgl}";
-                            $countBinds++;
-                        endif;
+                        $vrgl = (count($fields) === $countBinds) ? "" : ",";
+                        $this->setToPrepare(array('?' => $value));
+                        $this->select .= "?{$vrgl}";
+                        $countBinds++;
                     endforeach;
                 endforeach;
                 $this->select .= ")";
@@ -773,6 +750,88 @@ class MySqlConection extends Conection
         } 
         catch(\PDOException $ex) {
             echo "ERRO AO REALIZAR OS BINDVALUE: ".$ex->getMessage();
+        }
+    }
+    
+    /**
+     * Set and Get de novas tabelas
+     * @param String $table String com nome da tabela
+     * @return String $nickname O retorno será o nick da tabela ou o proprio nome da tabela
+     */
+    private function makeTableFrom($table)
+    {
+        $tableExplode = explode(" ", $table);
+        $nickname = $this->getFrom($tableExplode[0]);
+        if(empty($nickname)):
+
+            $this->setFrom($table);
+            $nickname = $this->getFrom($tableExplode[0]);
+        endif;
+        return ($nickname[0]['nickname'] !== null) ? $nickname[0]['nickname'] : $tableExplode[0];  
+    }
+    
+    /**
+     * Set and Get de novas tabelas
+     * @param String $table String com nome da tabela
+     * @return String $nickname O retorno será o nick da tabela ou o proprio nome da tabela
+     */
+    private function makeTableJoin($table)
+    {
+        $tableExplode = explode(" ", $table);
+        return (isset($tableExplode[1]) && $tableExplode[1] !== null) ? $tableExplode[1] : $tableExplode[0];  
+    }
+    
+    /**
+     * Este método cria, de acordo com os parametros, e seta na variável $this->joins os JOINS no que serão realizados na pesquisa
+     * @param array $args Array com tabela e condição para criação de joins
+     * @param array $fields Array com campos que serão retornados da tabela join
+     * @param type $type Tipo de JOIN podendo ser <b>INNER JOIN, LEFT JOIN ou RIGHT JOIN</b>
+     */
+    private function constructJoins(array $args, array $fields = null, $type)
+    {
+        try
+        {
+            if(!empty($args)):
+                
+                $nickname = null;
+                foreach ($args as $table => $conditions):
+                    
+                    $nickname = $this->makeTableJoin($table);
+                    $sintaxe = "{$type} {$table} ON";
+                    $countConditions = 1;
+                    foreach ($conditions as $condition):
+                        
+                        $and = (count($conditions) !== $countConditions) ? " AND" : "";
+                        $sintaxe .= " {$condition}{$and}";
+                        $countConditions++;
+                    endforeach;
+                    array_push($this->joins, $sintaxe);
+                    break;
+                endforeach;
+                $this->select = ($this->select === null) ? "SELECT" : $this->select . ",";
+                if($fields !== null && !empty($fields)):
+                    
+                    $countFields = 1;
+                    foreach ($fields as $field => $alias):
+
+                        $vrgl = (count($fields) === $countFields) ? "" : ",";
+                        if(is_numeric($field)):
+                            
+                            $this->select .= " {$nickname}.{$alias}{$vrgl}";
+                        else:
+                            
+                            $this->select .= " {$nickname}.{$field} AS '{$alias}'{$vrgl}";
+                        endif; 
+                        $countFields++;  
+                    endforeach;
+                else:
+                    $this->select .= " {$nickname}.*";
+                endif;
+            endif;
+        }
+        catch(\Exception $ex)
+        {
+            "ERRO DE CONSTRUÇÃO DE SQL({$type}): ".$ex->getMessage();
         }
     }
 }
