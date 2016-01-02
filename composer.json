@@ -17,7 +17,11 @@
     },
     "minimum-stability":"dev",
     "autoload" : {
-        "psr-0" :{"EpClasses" : "src/"}
+        "psr-0" :{
+            "EpClasses" : "src/",
+            "App": "/"
+        }
+        
     },
     "config":{
         "bin-dir":"bin/"

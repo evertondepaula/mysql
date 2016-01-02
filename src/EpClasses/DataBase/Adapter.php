@@ -24,7 +24,7 @@ class Adapter extends Conection
         try 
         {
             if($this->adapter === null):
-                $this->adapter = parent::getConstructForAdapter();
+                $this->adapter = parent::__construct();
             endif;
         }
         catch (Exception $ex)

@@ -21,11 +21,11 @@ abstract class Conection implements InterfaceConection
      * @return Object MySqlConection|
      * @throws Exception ERRO de conexao
      */
-    protected function getConstructForAdapter()
+    protected function __construct(\PDO $conection = null)
     {
         try
         {
-                return $this->getDbInstance();
+            return $this->getDbInstance();
         }
         catch(\PDOException $e)
         {

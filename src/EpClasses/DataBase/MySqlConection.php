@@ -41,7 +41,7 @@ class MySqlConection extends Conection
     private $joins = array();
     
     /** @var Array contém a string sql com todos os havings da aplicação */
-    private $havings = array();
+    private $having = array();
     
     /** @var String $where contém os valores de filtros where*/
     private $where = null;
@@ -64,11 +64,18 @@ class MySqlConection extends Conection
      */
     protected function __construct(\PDO $conection)
     {
-        if($this->dbInstance === null):
-            $this->dbInstance = $conection;
-            $this->dbInstance->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $this->dbInstance->setAttribute(\PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
-        endif;
+        try
+        {
+            if($this->dbInstance === null):
+                $this->dbInstance = $conection;
+                $this->dbInstance->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+                $this->dbInstance->setAttribute(\PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
+            endif;
+        }
+        catch(\PDOException $ex)
+        {
+            echo "ERRO AO ATRIBUIR PARAMETROS E SETAR INSTÂNCIA DO BANCO DE DADOS: ".$ex->getMessage();
+        }
     }
     
     /**
@@ -206,11 +213,33 @@ class MySqlConection extends Conection
     
     /**
      * Condição having em banco de dados MySql
-     * @param array $args Lista de campos a serem feitos having
+     * @param String $terms Lista de condição HAVING da consulta
+     * @param array $args Lista de valores para bind
      */
-    public function having(array $args)
+    public function having($terms, array $parameters = null)
     {
-        
+        if(!empty($terms)):
+                
+            $words = explode(" ",$terms);
+            $index = 0;
+            $itsLike = false;
+            foreach ($words as $word):
+
+                $posParam = strripos($word, "?");
+                $posWord = strripos($word, ":");
+                if($posWord !== false || $posParam !== false):
+
+                    $word = str_replace(array("%","'"," "),"",$word);
+                    $this->setToPrepare(array( $word => ($itsLike !== true) ? $parameters[$index] : "%{$parameters[$index]}%"));
+                    $index++;
+                    $itsLike = false;
+                elseif(strtoupper($word) === "LIKE"):
+                    $itsLike = true;
+                endif;
+
+            endforeach;
+            $this->having = ($this->having === null) ? $terms : $this->having . $terms;
+        endif;
     }
 
     /**
@@ -541,9 +570,13 @@ class MySqlConection extends Conection
                     $count++;
                 endforeach;
             endif;
-                    
+                
+            
             if(!empty($this->joins)):
                 
+                foreach ($this->joins as $join):
+                    $query .= " {$join}";
+                endforeach;
             endif;
                         
             if($this->where !== null):
@@ -611,6 +644,7 @@ class MySqlConection extends Conection
             
             if(!empty($this->joins)):
                 
+                $object['JOIN'] = $this->joins;
             endif;
             
             if($this->where !== null):
