@@ -10,11 +10,11 @@ use App\Model\User;
  *
  * @author tom
  */
-class Home extends Controller
+class About extends Controller
 {
     public function index()
     {
-        $this->setTitle("Home");
+        $this->setTitle("About");
         $user = new User();
         $this->view = $user->getUsers();
         $this->render("index", "layout");

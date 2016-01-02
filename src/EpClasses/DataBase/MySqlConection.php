@@ -212,34 +212,11 @@ class MySqlConection extends Conection
     }
     
     /**
-     * Condição having em banco de dados MySql
-     * @param String $terms Lista de condição HAVING da consulta
-     * @param array $args Lista de valores para bind
+     * 
      */
     public function having($terms, array $parameters = null)
     {
-        if(!empty($terms)):
-                
-            $words = explode(" ",$terms);
-            $index = 0;
-            $itsLike = false;
-            foreach ($words as $word):
-
-                $posParam = strripos($word, "?");
-                $posWord = strripos($word, ":");
-                if($posWord !== false || $posParam !== false):
-
-                    $word = str_replace(array("%","'"," "),"",$word);
-                    $this->setToPrepare(array( $word => ($itsLike !== true) ? $parameters[$index] : "%{$parameters[$index]}%"));
-                    $index++;
-                    $itsLike = false;
-                elseif(strtoupper($word) === "LIKE"):
-                    $itsLike = true;
-                endif;
-
-            endforeach;
-            $this->having = ($this->having === null) ? $terms : $this->having . $terms;
-        endif;
+       
     }
 
     /**
@@ -534,6 +511,9 @@ class MySqlConection extends Conection
         unset($this->group);
         $this->group = array();
         
+        unset($this->having);
+        $this->having = array();
+        
         unset($this->order);
         $this->order = array();
         
@@ -592,6 +572,13 @@ class MySqlConection extends Conection
                     $vrgl = (count($this->group) === $count) ? "" : "," ;
                     $query .= " {$field}{$vrgl}";
                     $count++;
+                endforeach;
+            endif;
+            
+            if(!empty($this->having)):
+                
+                foreach ($this->having as $having):
+                    $query .= " {$having}";
                 endforeach;
             endif;
             
@@ -655,6 +642,11 @@ class MySqlConection extends Conection
             if(!empty($this->group)):
                 
                 $object['GROUP BY'] = $this->group;
+            endif;
+            
+             if(!empty($this->having)):
+                
+                $object['HAVING'] = $this->having;
             endif;
             
             if(!empty($this->order)):

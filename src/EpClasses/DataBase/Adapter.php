@@ -148,12 +148,11 @@ class Adapter extends Conection
     }
     
     /**
-     * Condição having em banco de dados MySql
-     * @param array $args Lista de campos a serem feitos having
+     * 
      */
-    protected function having(array $args)
+    protected function having($terms, array $parameters = null)
     {
-        return $this->adapter->having($args);
+        return $this->adapter->having($terms, $parameters);
     }
     
     /**

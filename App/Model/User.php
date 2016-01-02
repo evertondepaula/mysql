@@ -12,10 +12,11 @@ class User extends Adapter
 {
     public function getUsers()
     {
-        return $this->select(array("Users" => 
+        return $this->select(array("users" => 
                                         array("*")
                                     )
                               )
-                    ->fetch();
+                    ->fetch(\PDO::FETCH_ASSOC);
+        
     }
 }

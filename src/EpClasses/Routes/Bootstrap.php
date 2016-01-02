@@ -26,9 +26,11 @@ abstract class Bootstrap
             if($url === $route['route']):
                 $class = "App\\Controllers\\".ucfirst($route['controller']);
                 $controller = new $class;
-                $controller->$route['action']();
+                return $controller->$route['action']();
             endif;
         });
+        $controller = new \App\Controllers\NotFound;
+        return $controller->index();
     }
     
     protected function setRoutes(array $routes)

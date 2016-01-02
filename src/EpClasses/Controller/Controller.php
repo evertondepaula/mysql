@@ -13,11 +13,10 @@ abstract class Controller
 
     protected $view;
     protected $action;
-    protected $title;
+    protected $title = null;
 
-    public function __construct($title) {
+    public function __construct() {
         $this->view = new \stdClass();
-        $this->title = $title;
     }
     
     /**
@@ -41,7 +40,7 @@ abstract class Controller
     protected function render($action, $template = null)
     {
         $this->action = $action;
-        if(file_exists("../App/Views/Templates/".$template.".phtml")):
+        if($template !== null && file_exists("../App/Views/Templates/".$template.".phtml")):
             include_once "../App/Views/Templates/".$template.".phtml";
         else:
             $this->getContent();
@@ -51,9 +50,10 @@ abstract class Controller
     /**
      * Seleciona o caminho do arquivo a ser renderizado
      */
-    public function getContent(){
+    public function getContent()
+    {
         $atual = get_class($this);
-        $singleClassName = strtolower(str_replace("App\\Controllers\\", "", $atual));
-        include_once "../App/Views/".$singleClassName."/".$this->action."phtml";
+        $singleClassName = str_replace("App\\Controllers\\", "", $atual);
+        include_once "../App/Views/".$singleClassName."/".$this->action.".phtml";
     }   
 }

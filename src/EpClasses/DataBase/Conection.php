@@ -14,7 +14,7 @@ abstract class Conection implements InterfaceConection
     /**
      * Constante para arquivo de configuração
      */
-    const FILE_CONFIG = "/../../../app/config/database.xml";
+    const FILE_CONFIG = "database.xml";
     
     /**
      * Ao construir a classe é feita a tentativa de estabelecer conexão com a base de dados, bem como determinar qual o banco de dados que será trabalhado
@@ -73,7 +73,7 @@ abstract class Conection implements InterfaceConection
     {
         try{
             $read = new Read\ReadXml();
-            return $read->getArrayFromXml(__DIR__.self::FILE_CONFIG);
+            return $read->getArrayFromXml($_SERVER['DOCUMENT_ROOT']."/../App/config/".self::FILE_CONFIG);
         }  
         catch (\Exception $ex)
         {
@@ -109,7 +109,7 @@ abstract class Conection implements InterfaceConection
     /**
      * Obriga a implentação de método para implementar condição having no select ao bando de dados
      */
-    abstract protected function having(array $args);
+    abstract protected function having($terms, array $parameters = null);
     
     /**
      * Obriga a implentação de método para implementar condição where no select ao bando de dados

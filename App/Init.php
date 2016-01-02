@@ -17,6 +17,7 @@ class Init extends Bootstrap
     protected function initRoutes()
     {
         $routes['home'] = ['route' => '/', 'controller' => 'home', 'action' => 'index'];
+        $routes['about'] = ['route' => '/about', 'controller' => 'about', 'action' => 'index'];
         $this->setRoutes($routes);
     }
 }
