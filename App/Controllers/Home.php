@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use EpClasses\Controller\Controller;
+use App\Model\User;
+
 /**
  * Controller pagina Home
  *
@@ -16,7 +18,8 @@ class Home extends Controller
     
     public function index()
     {
-       $this->render("index", "layout");
+        $user = new User();
+        $this->view = $user->getUsers();
+        $this->render("index", "layout");
     }
-    
 }
