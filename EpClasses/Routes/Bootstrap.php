@@ -18,29 +18,46 @@ abstract class Bootstrap
         $this->run($this->getUrl());
     }
     
+    //Método obrigatorio para inicialização das rotas
     abstract protected function initRoutes();
     
+    /**
+     * Executa o controller e action da rota
+     * @param type $url
+     */
     protected function run($url)
     {
-        array_walk($this->routes, function($route) use($url){
+        $find = false;
+        foreach ($this->routes as $route):
             if($url === $route['route']):
                 $class = "App\\Controllers\\".ucfirst($route['controller']);
                 $controller = new $class;
-                return $controller->$route['action']();
+                $controller->$route['action']();
+                $find = true;
             endif;
-        });
-        $controller = new \App\Controllers\NotFound;
-        return $controller->index();
+        endforeach;
+        
+        if($find === false):
+            $controller = new \App\Controllers\NotFound;
+            $controller->index();
+        endif;
     }
     
+    /**
+     * Seta todas as rotas
+     * @param array $routes
+     */
     protected function setRoutes(array $routes)
     {
         $this->routes = $routes;
     }
-    
-    
+        
+    /**
+     * retorna a rota solicitada
+     * @return type
+     */
     protected function getUrl()
     {
-        return parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        return parse_url( filter_input(INPUT_SERVER, "REQUEST_URI"), PHP_URL_PATH);
     }
 }

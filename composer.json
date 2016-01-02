@@ -18,8 +18,8 @@
     "minimum-stability":"dev",
     "autoload" : {
         "psr-0" :{
-            "EpClasses" : "EpClasses/",
-            "App": "App/"
+            "EpClasses" : "",
+            "App": ""
         }
         
     },

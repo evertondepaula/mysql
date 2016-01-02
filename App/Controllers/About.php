@@ -14,9 +14,9 @@ class About extends Controller
 {
     public function index()
     {
+        $data = $this->postAll();
         $this->setTitle("About");
-        $user = new User();
-        $this->view = $user->getUsers();
+        $this->view->nome = $data['nome'];
         $this->render("index", "layout");
     }
 }

@@ -157,11 +157,6 @@ abstract class Conection implements InterfaceConection
     abstract protected function fetch($type = null, $class = null);
     
     /**
-     * Obriga a implentação de método para realizar execução de metodos no bando de dados
-     */
-    abstract protected function execute();
-    
-    /**
      *  Obriga a implentação de método para conseguir a string da query formada pela objeto de execução da Query
      */
     abstract protected function getQuery($operation = 1);

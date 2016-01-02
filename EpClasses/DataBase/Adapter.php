@@ -148,8 +148,14 @@ class Adapter extends Conection
     }
     
     /**
-     * 
-     */
+     * Construção de método para impor condição having na seleção de dados do group by
+     * @param String $terms String contendo as condições having do select ex.:
+     *                  <b>"tabela.campo1 = tabela.campo2 AND tabela.campo1 > ? ou ainda :parametro1"</b><br/>
+     *                  O uso do nome da tabela é obrigatório caso não seja colocado seu apelido na método <b>select</b>.<br/>
+     *                  <b>Observação: Você deve utilizar a anotação :parametro ou ?, se existir a mistura das notações um erro retornará do bind dos parâmetros.</b><br/>
+     *@param Array $parameters Verifica no termo os pontos :parametro ou ? e substitui pelo parametros em array, no caso do uso de ? ordem do array deve ser a mesma da
+     *                          inserção dos pontos ? na string $terms
+    */
     protected function having($terms, array $parameters = null)
     {
         return $this->adapter->having($terms, $parameters);
@@ -163,7 +169,7 @@ class Adapter extends Conection
      *                  <b>Observação: Você deve utilizar a anotação :parametro ou ?, se existir a mistura das notações um erro retornará do bind dos parâmetros.</b><br/>
      *@param Array $parameters Verifica no termo os pontos :parametro ou ? e substitui pelo parametros em array, no caso do uso de ? ordem do array deve ser a mesma da
      *                          inserção dos pontos ? na string $terms
-     */
+    */
     protected function where($terms, array $parameters)
     {
         $this->adapter->where($terms, $parameters);
@@ -266,15 +272,6 @@ class Adapter extends Conection
     protected function fetch($type = null, $class = null)
     {
         return $this->adapter->fetch($type, $class);
-    }
-    
-    /**
-     * Executa métodos no bando de dados, como delet por exemplo, retorna true ou false para à operação
-     * @return boolean true|false
-     */
-    protected function execute()
-    {
-        return $this->adapter->execute();
     }
     
     /**

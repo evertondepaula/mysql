@@ -18,6 +18,7 @@ class Init extends Bootstrap
     {
         $routes['home'] = ['route' => '/', 'controller' => 'home', 'action' => 'index'];
         $routes['about'] = ['route' => '/about', 'controller' => 'about', 'action' => 'index'];
+        $routes['service'] = ['route' => '/service/callender', 'controller' => 'service', 'action' => 'getCallender'];
         $this->setRoutes($routes);
     }
 }

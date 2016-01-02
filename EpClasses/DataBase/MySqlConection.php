@@ -41,7 +41,7 @@ class MySqlConection extends Conection
     private $joins = array();
     
     /** @var Array contém a string sql com todos os havings da aplicação */
-    private $having = array();
+    private $having = null;
     
     /** @var String $where contém os valores de filtros where*/
     private $where = null;
@@ -82,7 +82,7 @@ class MySqlConection extends Conection
      * Select de dados em banco de dados MySql
      * @param Array $args Lista de de table(entidades) e campos que deveram retornar da consulta
      */
-    public function select(array $args)
+    protected function select(array $args)
     {
         try
         {
@@ -120,7 +120,7 @@ class MySqlConection extends Conection
      * Select de dados em banco de dados MySql
      * @param Array $args Lista de de table(entidades) e campos que deveram retornar da consulta
      */
-    public function functions(array $args)
+    protected function functions(array $args)
     {
         try
         {
@@ -186,7 +186,7 @@ class MySqlConection extends Conection
      * @param Array $args Tabela e condição de join
      * @param Array $fields Lista de campos a serem retornados da tabela join
     */
-    public function join(array $args, array $fields = null)
+    protected function join(array $args, array $fields = null)
     {
         $this->constructJoins($args, $fields, "INNER JOIN");
     }
@@ -196,7 +196,7 @@ class MySqlConection extends Conection
      * @param Array $args Tabela e condição de join
      * @param Array $fields Lista de campos a serem retornados da tabela join
     */
-    public function leftJoin(array $args, array $fields = null)
+    protected function leftJoin(array $args, array $fields = null)
     {
         $this->constructJoins($args, $fields, "LEFT JOIN");
     }
@@ -206,17 +206,47 @@ class MySqlConection extends Conection
      * @param Array $args Tabela e condição de join
      * @param Array $fields Lista de campos a serem retornados da tabela join
     */
-    public function rightJoin(array $args, array $fields = null)
+    protected function rightJoin(array $args, array $fields = null)
     {
         $this->constructJoins($args, $fields, "RIGHT JOIN");
     }
     
     /**
-     * 
+     * Condição having em banco de dados MySql
+     * @param type $terms Lista de condições having da consulta
+     * @param array $parameters lista de parametros a serem utilizados
      */
-    public function having($terms, array $parameters = null)
+    protected function having($terms, array $parameters = null)
     {
-       
+       try
+        {
+            if(!empty($terms)):
+                
+                $words = explode(" ",$terms);
+                $index = 0;
+                $itsLike = false;
+                foreach ($words as $word):
+                    
+                    $posParam = strripos($word, "?");
+                    $posWord = strripos($word, ":");
+                    if($posWord !== false || $posParam !== false):
+                        
+                        $word = str_replace(array("%","'"," "),"",$word);
+                        $this->setToPrepare(array( $word => ($itsLike !== true) ? $parameters[$index] : "%{$parameters[$index]}%"));
+                        $index++;
+                        $itsLike = false;
+                    elseif(strtoupper($word) === "LIKE"):
+                        $itsLike = true;
+                    endif;
+                    
+                endforeach;
+                $this->having = ($this->having === null) ? $terms : $this->having . $terms;
+            endif;
+        }
+        catch (\Exception $ex)
+        {
+            echo "ERRO AO CONSTRUIR 'HAVING': ".$ex->getMessage();
+        }       
     }
 
     /**
@@ -224,7 +254,7 @@ class MySqlConection extends Conection
      * @param String $terms Lista de condições WHERE da consulta
      * @param array $parameters lista de parametros where a serem utilizados
     */
-    public function where($terms, array $parameters)
+    protected function where($terms, array $parameters)
     {
         try
         {
@@ -261,7 +291,7 @@ class MySqlConection extends Conection
      * Condição order em banco de dados MySql
      * @param array $args Lista de condições ORDER da consulta
     */
-    public function order(array $args)
+    protected function order(array $args)
     {
         try
         {
@@ -288,7 +318,7 @@ class MySqlConection extends Conection
      * Condição group em banco de dados MySql
      * @param array $args Lista de condições GROUP da consulta
     */
-    public function group(array $args)
+    protected function group(array $args)
     {
         try
         {
@@ -310,7 +340,7 @@ class MySqlConection extends Conection
      * Condição limit em banco de dados MySql
      * @param Int $args int com LIMIT de retorno da consulta
     */
-    public function limit($args)
+    protected function limit($args)
     {
         try
         {
@@ -328,7 +358,7 @@ class MySqlConection extends Conection
      * @param array $args Lista de campos e valores a serem inseridos
      * @return boolean true|false
      */
-    public function insert($table, array $args)
+    protected function insert($table, array $args)
     {
         
     }
@@ -338,7 +368,7 @@ class MySqlConection extends Conection
      * @param type $table Tabela a ser feito delete no bando de dados
      * @return boolean true|false
      */
-    public function delete($table)
+    protected function delete($table)
     {
         
     }
@@ -349,7 +379,7 @@ class MySqlConection extends Conection
      * @param array $args Lista de campos e valores a serem feitos atualização
      * @return boolean true|false
      */
-    public function update($table, array $args = null)
+    protected function update($table, array $args = null)
     {
         
     }
@@ -363,7 +393,7 @@ class MySqlConection extends Conection
      *                    PDO::FETCH_CLASS
      *                    e outros
      */
-    public function procedure(array $args, $type = null)
+    protected function procedure(array $args, $type = null)
     {
         try
         {
@@ -404,7 +434,7 @@ class MySqlConection extends Conection
      * @param String $class Indica a qual object deseja-se transforma o retorno da consulta
      * @return Object|Array
      */
-    public function fetch($type = null , $class = null)
+    protected function fetch($type = null , $class = null)
     {
         try
         {
@@ -449,7 +479,7 @@ class MySqlConection extends Conection
      * @return boolean true|false
      * @throws \Exception Erro na tentiva de execução junto ao bando de dados
      */
-    public function execute()
+    private function execute()
     {
         try
         {
@@ -471,7 +501,7 @@ class MySqlConection extends Conection
      *                       ::SQL_OBJECT - 2 retornará um \ArrayObject separado por procedimentos sql
      * @return \String|\ArrayObject 
      */
-    public function getQuery($operation = 1)
+    protected function getQuery($operation = 1)
     {
         if($operation === self::SQL_STRING):
             
@@ -488,7 +518,7 @@ class MySqlConection extends Conection
      * Retorna o último Id inserido
      * @return Int
      */
-    public function getLastInsertId()
+    protected function getLastInsertId()
     {
         return (int) $this->lastInsertId;
     }
@@ -496,7 +526,7 @@ class MySqlConection extends Conection
     /**
      * Limpar as propriedades da Classe
      */
-    public function clear()
+    protected function clear()
     {
         $this->select = null;
         
@@ -575,11 +605,9 @@ class MySqlConection extends Conection
                 endforeach;
             endif;
             
-            if(!empty($this->having)):
+             if($this->having !== null):
                 
-                foreach ($this->having as $having):
-                    $query .= " {$having}";
-                endforeach;
+                $query .= " HAVING {$this->having}";
             endif;
             
             if(!empty($this->order)):
@@ -644,7 +672,7 @@ class MySqlConection extends Conection
                 $object['GROUP BY'] = $this->group;
             endif;
             
-             if(!empty($this->having)):
+             if($this->having !== null):
                 
                 $object['HAVING'] = $this->having;
             endif;
