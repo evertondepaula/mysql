@@ -209,13 +209,27 @@ class Adapter extends Conection
     }
     
     /**
-     * Construção de metodo para inserção de dados
-     * @param String $table Tabela a ser feita inserção
-     * @param array $args campos e valores a serem inseridos
+     * Inserir dados no database<br/>
+     * <b>Dica: </b>Pode utilizar-se do metodo select->()->fecth(\PDO::ENUM) para retornar um array de valores que serão inseridos no banco de dados
+     * @param string $table Nome da tabela de inserção
+     * @param array $fields array campos a serem inseridos valores
+     * @param array $args array de valores a serem inseridos,<br/>
+     * <b>Este array pode ser bidimensional, ou seja você pode passar varios arrays de valores a serem inseridos<br/>
+     *  ex.: array('valor', 'valor2', 'valor3') ou <br/>
+     *       array(<br/>
+     *          array('valor', 'valor2', 'valor3')<br/>
+     *          array('valor', 'valor2', 'valor3')<br/>
+     *        )</b><br/>
+     * @param boolean $getQueryString default FALSE<br/>
+     * <b>TRUE evita o execução da query e retorna a string formada para execução no banco de dados</b><br/>
+     * <b>FALSE executa o procedimento no banco de dados</b><br/>
+     * @return boolean TRUE|FALSE <br/>
+     * TRUE procedimento realizado com sucesso<br/>
+     * FALSE falha ao executar procedimento de inserção
      */
-    protected function insert($table, array $args)
+    protected function insert($table, array $fields, array $args, $getQueryString = false)
     {
-        return $this->adapter->insert($table, $args);
+        return $this->adapter->insert($table, $fields, $args, $getQueryString);
     }
     
     /**

@@ -21,7 +21,7 @@ abstract class Conection implements InterfaceConection
      * @return Object MySqlConection|
      * @throws Exception ERRO de conexao
      */
-    protected function __construct(\PDO $conection = null)
+    protected function __construct()
     {
         try
         {
@@ -43,7 +43,7 @@ abstract class Conection implements InterfaceConection
         switch ($config->drive):
             case "pdo_mysql":
 
-                return new MySqlConection(new \PDO("mysql:host={$config->host};dbname={$config->dbname};port={$config->port}", $config->user, $config->password));
+                return MySqlConection::getInstance($config);
             default :
                 
                 return null;
@@ -134,7 +134,7 @@ abstract class Conection implements InterfaceConection
     /**
      * Obriga a implentação de método para realizar inserts ao bando de dados
      */
-    abstract protected function insert($table, array $args);
+    abstract protected function insert($table, array $fields, array $args, $getQueryString = false);
     
     /**
      * Obriga a implentação de método para realizar deletes ao bando de dados

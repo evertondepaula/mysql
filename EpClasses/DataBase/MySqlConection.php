@@ -16,6 +16,9 @@ class MySqlConection extends Conection
     const SQL_STRING = 1;
     const SQL_OBJECT = 2;
     
+    /** @var self Utilizada para padrão singleton*/
+    private static $instance;
+    
     /** @var String Query montada para submissao a base de dados */
     private $query = null;
     
@@ -59,18 +62,49 @@ class MySqlConection extends Conection
     private $procedure = null;
     
     /**
-     * Método construtor para conexao com banco de dados
-     * @param \PDO $conection Conexao estabelcida com PDO com o bando de dados
+     * Evita que a classe seja instanciada publicamente.
+     *
+     * @return void
+    */
+    protected function __construct(){}
+    
+    /**
+     * Evita que a classe seja clonada.
+     *
+     * @return void
+    */
+    private function __clone(){}
+
+    /**
+     * Método unserialize do tipo privado para prevenir a 
+     * desserialização da instância dessa classe.
+     *
+     * @return void
+    */
+    private function __wakeup(){}
+
+    /**
+     * Método para iniciar instancia de banco de dados, utilizando-se do padrão singleton
+     * @param Object $config Dados para conexão com o banco de dados
      */
-    protected function __construct(\PDO $conection)
+    static public function getInstance($config)
     {
         try
         {
-            if($this->dbInstance === null):
-                $this->dbInstance = $conection;
-                $this->dbInstance->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-                $this->dbInstance->setAttribute(\PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
+            if(!isset(self::$instance)):
+                
+                self::$instance = new self; 
             endif;
+            
+            if(self::$instance->dbInstance === null):
+                
+                $conection = new \PDO("mysql:host={$config->host};dbname={$config->dbname};port={$config->port}", $config->user, $config->password);
+                self::$instance->dbInstance = $conection;
+                self::$instance->dbInstance->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+                self::$instance->dbInstance->setAttribute(\PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
+            endif;
+            
+            return self::$instance;
         }
         catch(\PDOException $ex)
         {
@@ -354,13 +388,84 @@ class MySqlConection extends Conection
     
     /**
      * Insert de dados em banco de dados MySql
-     * @param type $table Tabela, View a ser feito insert no bando de dados
+     * @param type $table Tabela a ser feito insert no bando de dados
      * @param array $args Lista de campos e valores a serem inseridos
-     * @return boolean true|false
+     * @return boolean true|false default false $getQueryString, Utilizada para exibir a string sql montada para o insert
      */
-    protected function insert($table, array $args)
+    protected function insert($table, array $fields, array $args, $getQueryString = false)
     {
-        
+        try
+        {
+            if(!empty($table) && !empty($fields) && !empty($args)):
+                $queryHeader = null;
+                $this->clear();
+                $queryHeader = "INSERT INTO {$table}(";
+                $countField = 1;
+                foreach ($fields as $field):
+                    
+                    $vrgl = ($countField === count($fields)) ? ")" : "," ;
+                    $queryHeader .= " {$table}.{$field}{$vrgl}";
+                    $countField++;
+                endforeach;
+                
+                if(count($args) == count($args, COUNT_RECURSIVE)):
+                    
+                    $this->select .= "{$queryHeader} VALUES (";
+                    $valuesCount = 1;
+                    foreach ($args as $value):
+                        
+                        $vrgl = ($valuesCount === count($args)) ? ")" : "," ;
+                        
+                        if($getQueryString):
+                            $this->select .= " '{$value}'{$vrgl}";
+                        else:
+                            $this->setToPrepare(array('?' => $value));
+                            $this->select .= " ?{$vrgl}";
+                        endif;
+                        $valuesCount++;
+                    endforeach;
+                    $this->select .= ";";
+                else:
+                    foreach ($args as $bind):
+                        $this->select .= " {$queryHeader} VALUES (";
+                        $valuesCount = 1;
+                        foreach ($bind as $value):
+                            
+                            $vrgl = ($valuesCount === count($bind)) ? ")" : "," ;
+                            
+                            if($getQueryString):
+                                $this->select .= " '{$value}'{$vrgl}";
+                            else:
+                                $this->setToPrepare(array('?' => $value));
+                                $this->select .= " ?{$vrgl}";
+                            endif;
+                            $valuesCount++;
+                        endforeach;
+                        $this->select .= ";";
+                    endforeach;
+                endif;
+                
+                if($getQueryString):
+                    return $this->select;
+                endif;
+                
+                $this->stmt = $this->dbInstance->prepare($this->select);
+                $this->bindValues();
+                if($this->execute()):
+                    
+                    $this->lastInsertId = $this->dbInstance->lastInsertId();
+                    $this->clear();
+                    return true;
+                endif;
+                
+                $this->clear();
+                return false;
+            endif;
+        }
+        catch(\PDOException $ex)
+        {
+            echo "ERRO AO TENTAR REALIZAR INSERT: ".$ex->getMessage();
+        }
     }
     
     /**
@@ -740,11 +845,8 @@ class MySqlConection extends Conection
         if(!empty($args)):
             
             foreach ($args as $prepare => $value):
-            
-                if(!in_array(array($prepare => $value), $this->toPrepare)):
-                    
-                    array_push($this->toPrepare, array($prepare => $value));
-                endif;
+
+                array_push($this->toPrepare, array($prepare => $value));
             endforeach;
         endif;
     }
