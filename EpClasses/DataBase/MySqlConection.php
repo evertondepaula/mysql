@@ -10,12 +10,6 @@ use EpClasses\Helpers\Filters;
  */
 class MySqlConection extends Conection
 {
-    /**
-     * Constantes
-     */
-    const SQL_STRING = 1;
-    const SQL_OBJECT = 2;
-    
     /** @var self Utilizada para padrão singleton*/
     private static $instance;
     
@@ -63,14 +57,12 @@ class MySqlConection extends Conection
     
     /**
      * Evita que a classe seja instanciada publicamente.
-     *
      * @return void
     */
-    protected function __construct(){}
+   protected function __construct(){}
     
     /**
      * Evita que a classe seja clonada.
-     *
      * @return void
     */
     private function __clone(){}
@@ -78,7 +70,6 @@ class MySqlConection extends Conection
     /**
      * Método unserialize do tipo privado para prevenir a 
      * desserialização da instância dessa classe.
-     *
      * @return void
     */
     private function __wakeup(){}
@@ -86,7 +77,8 @@ class MySqlConection extends Conection
     /**
      * Método para iniciar instancia de banco de dados, utilizando-se do padrão singleton
      * @param Object $config Dados para conexão com o banco de dados
-     */
+     * @throws \PDOException
+    */
     static public function getInstance($config)
     {
         try
@@ -108,14 +100,15 @@ class MySqlConection extends Conection
         }
         catch(\PDOException $ex)
         {
-            echo "ERRO AO ATRIBUIR PARAMETROS E SETAR INSTÂNCIA DO BANCO DE DADOS: ".$ex->getMessage();
+            throw new \PDOException("ERRO AO ATRIBUIR PARAMETROS E SETAR INSTÂNCIA DO BANCO DE DADOS: ".$ex->getMessage());
         }
     }
     
     /**
      * Select de dados em banco de dados MySql
      * @param Array $args Lista de de table(entidades) e campos que deveram retornar da consulta
-     */
+     * @throws \Exception
+    */
     protected function select(array $args)
     {
         try
@@ -142,18 +135,22 @@ class MySqlConection extends Conection
                     endforeach;
                     $countTable++;
                 endforeach;
+            else:
+                
+                throw new \Exception('->select(array $args) obrigatório parametrização.');
             endif;
         }
         catch (\Exception $ex)
         {
-            echo "ERRO DE CONSTRUÇÃO DE SQL(SELECT): ".$ex->getMessage();
+            throw new \Exception("ERRO DE CONSTRUÇÃO DE SQL(SELECT): ".$ex->getMessage());
         }
     }
     
     /**
      * Select de dados em banco de dados MySql
      * @param Array $args Lista de de table(entidades) e campos que deveram retornar da consulta
-     */
+     * @throws \Exception
+    */
     protected function functions(array $args)
     {
         try
@@ -207,11 +204,14 @@ class MySqlConection extends Conection
                     endif;
                     $countFunctions++;
                 endforeach;
+            else:
+                
+                throw new \Exception('->functions(array $args) obrigatório parametrização.');
             endif;
         }
         catch (\Exception $ex)
         {
-            echo "ERRO DE CONSTRUÇÃO DE SQL(SELECT P/ FUNCTIONS): ".$ex->getMessage();
+            throw new \Exception("ERRO DE CONSTRUÇÃO DE SQL(SELECT P/ FUNCTIONS): ".$ex->getMessage());
         }
     }
     
@@ -249,6 +249,7 @@ class MySqlConection extends Conection
      * Condição having em banco de dados MySql
      * @param type $terms Lista de condições having da consulta
      * @param array $parameters lista de parametros a serem utilizados
+     * @throws \Exception
      */
     protected function having($terms, array $parameters = null)
     {
@@ -275,11 +276,15 @@ class MySqlConection extends Conection
                     
                 endforeach;
                 $this->having = ($this->having === null) ? $terms : $this->having . $terms;
+                
+            else:
+                
+                throw new \Exception('->having($terms) obrigatório parametrização');
             endif;
         }
         catch (\Exception $ex)
         {
-            echo "ERRO AO CONSTRUIR 'HAVING': ".$ex->getMessage();
+            throw new \Exception("ERRO AO CONSTRUIR 'HAVING': ".$ex->getMessage());
         }       
     }
 
@@ -287,43 +292,52 @@ class MySqlConection extends Conection
      * Condição where em banco de dados MySql
      * @param String $terms Lista de condições WHERE da consulta
      * @param array $parameters lista de parametros where a serem utilizados
+     * @throws \Exception
     */
-    protected function where($terms, array $parameters)
+    protected function where($terms, array $parameters = null)
     {
         try
         {
             if(!empty($terms)):
                 
-                $words = explode(" ",$terms);
-                $index = 0;
-                $itsLike = false;
-                foreach ($words as $word):
+                if($parameters !== null):
                     
-                    $posParam = strripos($word, "?");
-                    $posWord = strripos($word, ":");
-                    if($posWord !== false || $posParam !== false):
-                        
-                        $word = str_replace(array("%","'"," "),"",$word);
-                        $this->setToPrepare(array( $word => ($itsLike !== true) ? $parameters[$index] : "%{$parameters[$index]}%"));
-                        $index++;
-                        $itsLike = false;
-                    elseif(strtoupper($word) === "LIKE"):
-                        $itsLike = true;
-                    endif;
-                    
-                endforeach;
+                    $words = explode(" ",$terms);
+                    $index = 0;
+                    $itsLike = false;
+                    foreach ($words as $word):
+
+                        $posParam = strripos($word, "?");
+                        $posWord = strripos($word, ":");
+                        if($posWord !== false || $posParam !== false):
+
+                            $word = str_replace(array("%","'"," "),"",$word);
+                            $this->setToPrepare(array( $word => ($itsLike !== true) ? $parameters[$index] : "%{$parameters[$index]}%"));
+                            $index++;
+                            $itsLike = false;
+                        elseif(strtoupper($word) === "LIKE"):
+                            $itsLike = true;
+                        endif;
+
+                    endforeach;
+                endif;
+                
                 $this->where = ($this->where === null) ? $terms : $this->where . $terms;
+            else:
+                
+                throw new \Exception('->where($terms) obrigatório parametrização');
             endif;
         }
         catch (\Exception $ex)
         {
-            echo "ERRO AO CONSTRUIR 'WHERE': ".$ex->getMessage();
+            throw new \Exception("ERRO AO CONSTRUIR 'WHERE': ".$ex->getMessage());
         }       
     }
     
     /**
      * Condição order em banco de dados MySql
      * @param array $args Lista de condições ORDER da consulta
+     * @throws \Exception
     */
     protected function order(array $args)
     {
@@ -340,17 +354,21 @@ class MySqlConection extends Conection
                     
                     array_push($this->order, array($field => strtoupper($value)));
                 endforeach;
+            else:
+                
+               throw new \Exception('->order($args) obrigatório parametrização');
             endif;
         }
         catch(\Exception $ex)
         {
-            echo "ERRO AO CONSTRUIR 'ORDER BY': ".$ex->getMessage();
+            throw new \Exception("ERRO AO CONSTRUIR 'ORDER BY': ".$ex->getMessage());
         }
     }
     
     /**
      * Condição group em banco de dados MySql
      * @param array $args Lista de condições GROUP da consulta
+     * @throws \Exception
     */
     protected function group(array $args)
     {
@@ -362,17 +380,21 @@ class MySqlConection extends Conection
                     
                     array_push($this->group, $field);
                 endforeach;
+            else:
+                
+                throw new \Exception('->group($args) obrigatório parametrização');
             endif;
         }
         catch (\Exception $ex)
         {
-            echo "ERRO AO MONTAR GROUP BY: ".$ex->getMessage();
+            throw new \Exception("ERRO AO MONTAR GROUP BY: ".$ex->getMessage());
         }
     }
     
     /**
      * Condição limit em banco de dados MySql
      * @param Int $args int com LIMIT de retorno da consulta
+     * @throws \Exception
     */
     protected function limit($args)
     {
@@ -382,7 +404,7 @@ class MySqlConection extends Conection
         }
         catch (\Exception $ex)
         {
-            echo "ERRO DE CONSTRUÇÃO DE SQL (LIMIT): ".$ex->getMessage();
+            throw new \Exception("ERRO DE CONSTRUÇÃO DE SQL (LIMIT): ".$ex->getMessage());
         }
     }
     
@@ -391,7 +413,8 @@ class MySqlConection extends Conection
      * @param type $table Tabela a ser feito insert no bando de dados
      * @param array $args Lista de campos e valores a serem inseridos
      * @return boolean true|false default false $getQueryString, Utilizada para exibir a string sql montada para o insert
-     */
+     * @throws \PDOException
+    */
     protected function insert($table, array $fields, array $args, $getQueryString = false)
     {
         try
@@ -460,11 +483,14 @@ class MySqlConection extends Conection
                 
                 $this->clear();
                 return false;
+            else:    
+                
+                throw new \PDOException('Os Parametros update->($table, $args, $where) São obrigatórios.');
             endif;
         }
         catch(\PDOException $ex)
         {
-            echo "ERRO AO TENTAR REALIZAR INSERT: ".$ex->getMessage();
+            throw new \PDOException("ERRO AO TENTAR REALIZAR INSERT: ".$ex->getMessage());
         }
     }
     
@@ -472,7 +498,7 @@ class MySqlConection extends Conection
      * Delete de dados em banco de dados MySql
      * @param type $table Tabela a ser feito delete no bando de dados
      * @return boolean true|false
-     */
+    */
     protected function delete($table)
     {
         
@@ -480,13 +506,69 @@ class MySqlConection extends Conection
     
     /**
      * Update de dados em banco de dados MySql
-     * @param type $table Tabela, View a ser feito insert no bando de dados
+     * @param String $table Tabela, View a ser feito insert no bando de dados
      * @param array $args Lista de campos e valores a serem feitos atualização
+     * @param String $where array de termos e valores a serem feitos atualização
+     * @param Boolean $getQueryString TRUE|FALSE default FALSE
      * @return boolean true|false
-     */
-    protected function update($table, array $args = null)
+     * @throws \PDOException
+    */
+    protected function update($table, array $args, $where = null, $getQueryString = false)
     {
-        
+        try
+        {
+            if(!empty($table) && !empty($args)):
+                $this->clear();
+                $this->select = "UPDATE {$table} SET";
+                $countFields = 1;
+                foreach ($args as $field => $value):
+                
+                    $vrgl = ($countFields === count($args)) ? ""  : ",";
+                    if($getQueryString):
+                        
+                        $this->select .= " {$table}.{$field} = '{$value}'{$vrgl}";
+                    else:
+                        
+                        $this->setToPrepare(array("?" => $value));
+                        $this->select .= " {$table}.{$field} = ?{$vrgl}";
+                    endif;
+                    $countFields++;
+                endforeach;
+                
+                if(!empty($where) && $where !== null):
+                    
+                    foreach ($where as $terms => $values):
+                    
+                        $this->where($terms, $values);
+                    endforeach;
+                endif;
+                
+                $this->select .= " WHERE {$this->where};";
+                
+                if($getQueryString):
+                    return $this->select;
+                endif;
+                
+                $this->stmt = $this->dbInstance->prepare($this->select);
+                $this->bindValues();
+                
+                if($this->execute()):
+                    
+                    $this->clear();
+                    return true;
+                endif;
+                
+                $this->clear();
+                return false;
+                
+            else:
+                throw new \PDOException('Os Parametros update->($table, $args, $where) São obrigatórios.');
+            endif;
+        }
+        catch(\PDOException $ex)
+        {
+            throw new \PDOException("ERRO AO TENTAR REALIZAR UPDATE: ".$ex->getMessage());
+        }
     }
     
     /**
@@ -496,8 +578,10 @@ class MySqlConection extends Conection
      *                    PDO::FETCH_ASSOC
      *                    PDO::FETCH_BOTH
      *                    PDO::FETCH_CLASS
+     *                    PDO::FECTH_NUM
      *                    e outros
-     */
+     * @throws \Exception
+    */
     protected function procedure(array $args, $type = null)
     {
         try
@@ -520,12 +604,14 @@ class MySqlConection extends Conection
                 endforeach;
                 $this->select .= ")";
                 return $this->fetch($type);
+            else:
+                
+                throw new \Exception('->procedure($args) obrigatório parametrização.');
             endif;
-            return null;
         }
         catch (\Exception $ex)
         {
-            echo "ERRO DE CONSTRUÇÃO DE SQL(PROCEDURE): ".$ex->getMessage();
+            throw new \Exception("ERRO DE CONSTRUÇÃO DE SQL(PROCEDURE): ".$ex->getMessage());
         }
     }
     
@@ -535,10 +621,12 @@ class MySqlConection extends Conection
      *                    PDO::FETCH_ASSOC
      *                    PDO::FETCH_BOTH
      *                    PDO::FETCH_CLASS
+     *                    PDO::FECTH_NUM
      *                    e outros
      * @param String $class Indica a qual object deseja-se transforma o retorno da consulta
      * @return Object|Array
-     */
+     * @throws \Exception
+    */
     protected function fetch($type = null , $class = null)
     {
         try
@@ -548,8 +636,12 @@ class MySqlConection extends Conection
                 
                 $callback = null;
                 $this->stmt = $this->dbInstance->prepare($this->query);
-                $this->bindValues();
-
+                
+                if(!empty($this->toPrepare)):
+                    
+                    $this->bindValues();
+                endif;
+                
                 if($this->execute()):
 
                     if($type === null && $class === null):
@@ -571,19 +663,20 @@ class MySqlConection extends Conection
 
                 return $callback;
             endif;
-            return array('AVISO'=>'É preciso estabelecer o método de pesquisa novamente, após a execução do fetch() ou execute(), a consulta é deletada');
+            
+            throw new \Exception('É preciso estabelecer o método de pesquisa novamente, após a execução do fetch() ou execute(), a consulta é deletada');
         }
         catch(\Exception $ex)
         {
-            echo "ERRO AO TENTAR FAZER FETCH DOS DADOS: ".$ex->getMessage();
+            throw new \Exception("ERRO AO TENTAR FAZER FETCH DOS DADOS: ".$ex->getMessage());
         }
     }
     
     /**
      * Procedimento executa as operações no banco de dados
      * @return boolean true|false
-     * @throws \Exception Erro na tentiva de execução junto ao bando de dados
-     */
+     * @throws \PDOException
+    */
     private function execute()
     {
         try
@@ -595,18 +688,19 @@ class MySqlConection extends Conection
         }
         catch (\PDOException $e)
         {
-            throw new \Exception("ERRO SMTP: ".$e->getMessage());
+            throw new \PDOException("ERRO SMTP: ".$e->getMessage());
         }
     }
        
     /**
      * Retorna a Query formada a ser submetida a base de dados
      * @param int $operation Seleciona o tipo de retorno
-     *                       ::SQL_STRING - 1 retornará uma \String com a query (default)
-     *                       ::SQL_OBJECT - 2 retornará um \ArrayObject separado por procedimentos sql
-     * @return \String|\ArrayObject 
-     */
-    protected function getQuery($operation = 1)
+     *                       self::SQL_STRING - 1 retornará uma \String com a query (default)
+     *                       self::SQL_OBJECT - 2 retornará um \ArrayObject separado por procedimentos sql
+     * @return \String|\ArrayObject
+     * @throws \Exception
+    */
+    protected function getQuery($operation = self::SQL_STRING)
     {
         if($operation === self::SQL_STRING):
             
@@ -622,264 +716,330 @@ class MySqlConection extends Conection
     /**
      * Retorna o último Id inserido
      * @return Int
-     */
+     * @throws \Exception
+    */
     protected function getLastInsertId()
     {
-        return (int) $this->lastInsertId;
+        try
+        {
+            return (int) $this->lastInsertId;
+        }
+        catch(\Exception $ex)
+        {
+            throw new Exception('Ao ao tentar retornar último id inserido no banco de dados: '.$ex->getMessage());
+        }
+        
     }
         
     /**
      * Limpar as propriedades da Classe
-     */
+     * @throws \Exception
+    */
     protected function clear()
     {
-        $this->select = null;
-        
-        $this->from = array();
-        unset($this->from);
-        
-        unset($this->joins);
-        $this->joins = array();
-        
-        $this->where = null;
-        
-        unset($this->group);
-        $this->group = array();
-        
-        unset($this->having);
-        $this->having = array();
-        
-        unset($this->order);
-        $this->order = array();
-        
-        $this->limit = null;
-        
-        $this->procedure = null;
-        
-        $this->stmt = null;
-        $this->query = null;
-        
-        unset($this->toPrepare);
-        $this->toPrepare = array();
+        try
+        {
+            $this->select = null;
+
+            $this->from = array();
+            unset($this->from);
+
+            unset($this->joins);
+            $this->joins = array();
+
+            $this->where = null;
+
+            unset($this->group);
+            $this->group = array();
+
+            unset($this->having);
+            $this->having = array();
+
+            unset($this->order);
+            $this->order = array();
+
+            $this->limit = null;
+
+            $this->procedure = null;
+
+            $this->stmt = null;
+            $this->query = null;
+
+            unset($this->toPrepare);
+            $this->toPrepare = array(); 
+        }
+        catch(\Exception $ex)
+        {
+            throw new \Exception("ERRO AO LIMPAR BASE DE INFORMAÇÕES: ".$ex->getMessage()); 
+        }
     }
     
     /**
      * Esta função constroe tada a query para execução no banco de dados
      * @return String Query construida para perpetuar select
-     */
+     * @throws \Exception
+    */
     private function constructQueryString()
     {
-        $query = null;
-        if($this->select !== null):
-            
-            $query = $this->select;
-        
-            if(!empty($this->from)):
-                
-                $query .= " FROM";
-                $count = 1;
-                foreach ($this->from as $from):
+        try
+        {
+            $query = null;
+            if($this->select !== null):
 
-                    $vrgl = (count($this->from) === $count) ? "" : "," ;
-                    $query .= " {$from['table']} {$from['nickname']}{$vrgl}";
-                    $count++;
-                endforeach;
-            endif;
-                
-            
-            if(!empty($this->joins)):
-                
-                foreach ($this->joins as $join):
-                    $query .= " {$join}";
-                endforeach;
-            endif;
-                        
-            if($this->where !== null):
-                
-                $query .= " WHERE {$this->where}";
-            endif;
-            
-            if(!empty($this->group)):
-                $count = 1;
-                $query .= " GROUP BY";
-                foreach ($this->group as $field):
-                    
-                    $vrgl = (count($this->group) === $count) ? "" : "," ;
-                    $query .= " {$field}{$vrgl}";
-                    $count++;
-                endforeach;
-            endif;
-            
-             if($this->having !== null):
-                
-                $query .= " HAVING {$this->having}";
-            endif;
-            
-            if(!empty($this->order)):
-                
-                $count = 1;
-                $query .= " ORDER BY";
-                    foreach ($this->order as $fields):
-                        
-                        foreach($fields as $field => $value):
+                $query = $this->select;
 
-                            $vrgl = (count($this->order) === $count) ? "" : "," ;
-                            $query .= " {$field} {$value}{$vrgl}";
-                            $count++;
-                        endforeach;
+                if(!empty($this->from)):
+
+                    $query .= " FROM";
+                    $count = 1;
+                    foreach ($this->from as $from):
+
+                        $vrgl = (count($this->from) === $count) ? "" : "," ;
+                        $query .= " {$from['table']} {$from['nickname']}{$vrgl}";
+                        $count++;
                     endforeach;
+                endif;
+
+
+                if(!empty($this->joins)):
+
+                    foreach ($this->joins as $join):
+                        $query .= " {$join}";
+                    endforeach;
+                endif;
+
+                if($this->where !== null):
+
+                    $query .= " WHERE {$this->where}";
+                endif;
+
+                if(!empty($this->group)):
+                    $count = 1;
+                    $query .= " GROUP BY";
+                    foreach ($this->group as $field):
+
+                        $vrgl = (count($this->group) === $count) ? "" : "," ;
+                        $query .= " {$field}{$vrgl}";
+                        $count++;
+                    endforeach;
+                endif;
+
+                 if($this->having !== null):
+
+                    $query .= " HAVING {$this->having}";
+                endif;
+
+                if(!empty($this->order)):
+
+                    $count = 1;
+                    $query .= " ORDER BY";
+                        foreach ($this->order as $fields):
+
+                            foreach($fields as $field => $value):
+
+                                $vrgl = (count($this->order) === $count) ? "" : "," ;
+                                $query .= " {$field} {$value}{$vrgl}";
+                                $count++;
+                            endforeach;
+                        endforeach;
+                endif;
+
+                if($this->limit !== null):
+
+                    $query .= " LIMIT ".$this->limit;
+                endif;
             endif;
-            
-            if($this->limit !== null):
-                
-                $query .= " LIMIT ".$this->limit;
-            endif;
-        endif;
-        return $query;
+            return $query;
+        }
+        catch(\Exception $ex)
+        {
+            throw new \Exception("ERRO AO CONSTRUIR STRING SQL: ".$ex->getMessage()); 
+        }
+        
     }
     
     /**
      * Esta função constroe tada a query para execução no banco de dados
      * @return String Query construida para perpetuar select
-     */
+     * @throws \Exception
+    */
     private function constructQueryObject()
     {
-        $object = new \ArrayObject();
-        if($this->select !== null):
-            
-            $object['SELECT'] = str_replace("SELECT ", "", $this->select);
-            
-            if(!empty($this->from)):
-                
-                $count = 1;
-                $arrayFrom = array();
-                foreach ($this->from as $from):
+        try
+        {
+            $object = new \ArrayObject();
+            if($this->select !== null):
 
-                    $vrgl = (count($this->from) === $count) ? "" : "," ;
-                    array_push($arrayFrom,"{$from['table']} {$from['nickname']}");
-                    $count++;
-                endforeach;
-                $object['FROM'] = $arrayFrom;
+                $object['SELECT'] = str_replace("SELECT ", "", $this->select);
+
+                if(!empty($this->from)):
+
+                    $count = 1;
+                    $arrayFrom = array();
+                    foreach ($this->from as $from):
+
+                        $vrgl = (count($this->from) === $count) ? "" : "," ;
+                        array_push($arrayFrom,"{$from['table']} {$from['nickname']}");
+                        $count++;
+                    endforeach;
+                    $object['FROM'] = $arrayFrom;
+                endif;
+
+                if(!empty($this->joins)):
+
+                    $object['JOIN'] = $this->joins;
+                endif;
+
+                if($this->where !== null):
+
+                    $object['WHERE'] = $this->where;
+                endif;
+
+                if(!empty($this->group)):
+
+                    $object['GROUP BY'] = $this->group;
+                endif;
+
+                 if($this->having !== null):
+
+                    $object['HAVING'] = $this->having;
+                endif;
+
+                if(!empty($this->order)):
+
+                    $object['ORDER BY'] = $this->order;
+                endif;
+
+                if($this->limit !== null):
+
+                    $object['LIMIT'] = $this->limit;
+                endif;
+
+                if(!empty($this->toPrepare)):
+
+                    $bind = array();
+                    foreach ($this->toPrepare as $prepare):
+
+                        array_push($bind, $prepare);
+                    endforeach;
+                    $object['BIND'] = $bind;
+                endif;
             endif;
-            
-            if(!empty($this->joins)):
-                
-                $object['JOIN'] = $this->joins;
-            endif;
-            
-            if($this->where !== null):
-                
-                $object['WHERE'] = $this->where;
-            endif;
-            
-            if(!empty($this->group)):
-                
-                $object['GROUP BY'] = $this->group;
-            endif;
-            
-             if($this->having !== null):
-                
-                $object['HAVING'] = $this->having;
-            endif;
-            
-            if(!empty($this->order)):
-                
-                $object['ORDER BY'] = $this->order;
-            endif;
-            
-            if($this->limit !== null):
-                
-                $object['LIMIT'] = $this->limit;
-            endif;
-            
-            if(!empty($this->toPrepare)):
-                
-                $bind = array();
-                foreach ($this->toPrepare as $prepare):
-                    
-                    array_push($bind, $prepare);
-                endforeach;
-                $object['BIND'] = $bind;
-            endif;
-            
-        endif;
-        return $object;
+            return $object;
+        }
+        catch(\Exception $ex)
+        {
+            throw new \Exception("ERRO AO CONSTRUIR OBJETO SQL: ".$ex->getMessage()); 
+        }
     }
     
     /**
      * submitNickname (apelidos) a serem usados nas entidades objetos de pesquisa
      * @param String $table Nome da tabela (entidade)
      * @return String
-     */
+     * @throws \Exception
+    */
     private function setFrom($table)
     {
-        $find = false;
-        while(!$find):
-            
-            if(empty($this->getFrom($table))):
-                
-                $table = explode(" ",$table);
-                array_push($this->from, array('table' => $table[0], 'nickname' => (isset($table[1])) ? $table[1] : null));
-                $find = true;
-            endif;
-        endwhile;
+        try
+        {
+            $find = false;
+            while(!$find):
+
+                if(empty($this->getFrom($table))):
+
+                    $table = explode(" ",$table);
+                    array_push($this->from, array('table' => $table[0], 'nickname' => (isset($table[1])) ? $table[1] : null));
+                    $find = true;
+                endif;
+            endwhile;
+        }
+        catch(\Exception $ex)
+        {
+            throw new \Exception('ERRO AO EXECUTAR MÉTODO ->setFrom($table): '.$ex->getMessage()); 
+        }
     }
     
     /**
      * Recupera o nickname da tabela dos apelidos contanstes no array $this->$nickname
      * @param String $tableName Nome da tabela a ser resgatado o nickname, apelido
      * @return Array->ArrayObject com nickname da tabela na consulta
-     */
+     * @throws \Exception
+    */
     private function getFrom($table)
     {
-        $filter = new Filters\FilterArrayObject(new \ArrayObject($this->from), new \ArrayIterator(array('table')), $table);
-        return $filter->getObjFiltered();
+        try
+        {
+            $filter = new Filters\FilterArrayObject(new \ArrayObject($this->from), new \ArrayIterator(array('table')), $table);
+            return $filter->getObjFiltered();
+        }
+        catch (\Exception $ex)
+        {
+            throw new \Exception('ERRO AO EXECUTAR MÉTODO ->getFrom($table): '.$ex->getMessage()); 
+        }
     }
     
     /**
      * Set os valores para serem feitos os  BindValues
      * @param Array $args array(':campo' => 'valor')
-     */
+     * @throws \Exception
+    */
     private function setToPrepare(array $args)
     {
-        if(!empty($args)):
+        try
+        {
+            if(!empty($args)):
             
-            foreach ($args as $prepare => $value):
+                foreach ($args as $prepare => $value):
 
-                array_push($this->toPrepare, array($prepare => $value));
-            endforeach;
-        endif;
+                    array_push($this->toPrepare, array($prepare => $value));
+                endforeach;
+            endif;
+        }
+        catch (\Exception $ex)
+        {
+            throw new \Exception('ERRO AO EXECUTAR MÉTODO ->setToPrepare(array $args): '.$ex->getMessage()); 
+        }
     }
     
     /**
      * Retorna uma string sem os marcadores bindValue (Ex.: :campos), ao invés disso retorna seus valores
      * @param String $query String a ser convertida para substituição de dos :campos por seus valores
      * @return String $query String tratada para exibição
-     */
+     * @throws \Exception
+    */
     private function getToPrepare($query)
     {
-        if(!empty($query) && !empty($this->toPrepare)):
-            
-            foreach ($this->toPrepare as $prepare):
-                
-                foreach ($prepare as $bind => $value):
-                    
-                    if($bind === "?"):
-                        
-                        $query = preg_replace("/\\{$bind}/", ($value[0] === "%") ? "'{$value}'": $value , $query,1);
-                    else:
-                        
-                        $query = str_replace($bind, ($value[0] === "%") ? "'{$value}'": $value, $query);
-                    endif;
+        try{
+            if(!empty($query) && !empty($this->toPrepare)):
+
+                foreach ($this->toPrepare as $prepare):
+
+                    foreach ($prepare as $bind => $value):
+
+                        if($bind === "?"):
+
+                            $query = preg_replace("/\\{$bind}/", ($value[0] === "%") ? "'{$value}'": $value , $query,1);
+                        else:
+
+                            $query = str_replace($bind, ($value[0] === "%") ? "'{$value}'": $value, $query);
+                        endif;
+                    endforeach;
                 endforeach;
-            endforeach;
-        endif;
-        
-        return $query;
+                return $query;
+            else:
+                
+                throw new \Exception('É necessario estarem setados o objeto para prepare bem como a query a ser executada.'); 
+            endif;
+        }catch (\Exception $ex)
+        {
+            throw new \Exception('ERRO AO EXECUTAR MÉTODO ->getToPrepare($query): '.$ex->getMessage()); 
+        }
     }
     
     /**
      * Função registras os values para serem realizados no banco de dados
+     * @throws \PDOException
     */
     private function bindValues()
     {
@@ -902,10 +1062,14 @@ class MySqlConection extends Conection
                         endif;
                     endforeach;
                 endforeach;
+            else:
+                
+                throw new \PDOException('É necessario estar inicializada os valores para prepare e o objeto $this->stmt ser uma instancia de \PDOStatement: ');
             endif;
         } 
-        catch(\PDOException $ex) {
-            echo "ERRO AO REALIZAR OS BINDVALUE: ".$ex->getMessage();
+        catch(\PDOException $ex)
+        {
+            throw new \PDOException("ERRO AO REALIZAR OS BINDVALUE: ".$ex->getMessage());
         }
     }
     
@@ -913,28 +1077,42 @@ class MySqlConection extends Conection
      * Set and Get de novas tabelas
      * @param String $table String com nome da tabela
      * @return String $nickname O retorno será o nick da tabela ou o proprio nome da tabela
-     */
+     * @throws \Exception
+    */
     private function makeTableFrom($table)
     {
-        $tableExplode = explode(" ", $table);
-        $nickname = $this->getFrom($tableExplode[0]);
-        if(empty($nickname)):
-
-            $this->setFrom($table);
+        try{
+            $tableExplode = explode(" ", $table);
             $nickname = $this->getFrom($tableExplode[0]);
-        endif;
-        return ($nickname[0]['nickname'] !== null) ? $nickname[0]['nickname'] : $tableExplode[0];  
+            if(empty($nickname)):
+
+                $this->setFrom($table);
+                $nickname = $this->getFrom($tableExplode[0]);
+            endif;
+            return ($nickname[0]['nickname'] !== null) ? $nickname[0]['nickname'] : $tableExplode[0];  
+        }
+        catch (\Exception $ex)
+        {
+            throw new \Exception('ERRO AO REALIZAR MÉTODO ->makeTableFrom($table): '.$ex->getMessage());
+        }
     }
     
     /**
      * Set and Get de novas tabelas
      * @param String $table String com nome da tabela
      * @return String $nickname O retorno será o nick da tabela ou o proprio nome da tabela
-     */
+     * @throws \Exception
+    */
     private function makeTableJoin($table)
     {
-        $tableExplode = explode(" ", $table);
-        return (isset($tableExplode[1]) && $tableExplode[1] !== null) ? $tableExplode[1] : $tableExplode[0];  
+        try{
+            $tableExplode = explode(" ", $table);
+            return (isset($tableExplode[1]) && $tableExplode[1] !== null) ? $tableExplode[1] : $tableExplode[0];  
+        }
+        catch (\Exception $ex)
+        {
+            throw new \Exception('ERRO AO REALIZAR MÉTODO ->makeTableJoin($table): '.$ex->getMessage());
+        }
     }
     
     /**
@@ -942,7 +1120,8 @@ class MySqlConection extends Conection
      * @param array $args Array com tabela e condição para criação de joins
      * @param array $fields Array com campos que serão retornados da tabela join
      * @param type $type Tipo de JOIN podendo ser <b>INNER JOIN, LEFT JOIN ou RIGHT JOIN</b>
-     */
+     * @throws \Exception
+    */
     private function constructJoins(array $args, array $fields = null, $type)
     {
         try
@@ -983,11 +1162,14 @@ class MySqlConection extends Conection
                 else:
                     $this->select .= " {$nickname}.*";
                 endif;
+            else:
+                
+                throw new \Exception("ERRO DE CONSTRUÇÃO DE SQL({$type}), parametrização obrigatória");
             endif;
         }
         catch(\Exception $ex)
         {
-            "ERRO DE CONSTRUÇÃO DE SQL({$type}): ".$ex->getMessage();
+            throw new \Exception("ERRO DE CONSTRUÇÃO DE SQL({$type}): ".$ex->getMessage());
         }
     }
 }

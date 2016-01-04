@@ -12,9 +12,11 @@ use EpClasses\Helpers\Read;
 abstract class Conection implements InterfaceConection
 {
     /**
-     * Constante para arquivo de configuração
+     * Constantes
      */
     const FILE_CONFIG = "database.xml";
+    const SQL_STRING = 1;
+    const SQL_OBJECT = 2;
     
     /**
      * Ao construir a classe é feita a tentativa de estabelecer conexão com a base de dados, bem como determinar qual o banco de dados que será trabalhado
@@ -159,7 +161,7 @@ abstract class Conection implements InterfaceConection
     /**
      *  Obriga a implentação de método para conseguir a string da query formada pela objeto de execução da Query
      */
-    abstract protected function getQuery($operation = 1);
+    abstract protected function getQuery($operation = MySqlConection::SQL_STRING);
     
     /**
      * Obriga a implentação de método para conseguir o último id inserido no bando de dados

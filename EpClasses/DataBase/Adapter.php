@@ -170,7 +170,7 @@ class Adapter extends Conection
      *@param Array $parameters Verifica no termo os pontos :parametro ou ? e substitui pelo parametros em array, no caso do uso de ? ordem do array deve ser a mesma da
      *                          inserção dos pontos ? na string $terms
     */
-    protected function where($terms, array $parameters)
+    protected function where($terms, array $parameters = null)
     {
         $this->adapter->where($terms, $parameters);
         return $this;
@@ -210,7 +210,7 @@ class Adapter extends Conection
     
     /**
      * Inserir dados no database<br/>
-     * <b>Dica: </b>Pode utilizar-se do metodo select->()->fecth(\PDO::ENUM) para retornar um array de valores que serão inseridos no banco de dados
+     * <b>Dica: </b>Pode utilizar-se do método select->()->fecth(\PDO::NUM) para retornar um array de valores que serão inseridos no banco de dados
      * @param string $table Nome da tabela de inserção
      * @param array $fields array campos a serem inseridos valores
      * @param array $args array de valores a serem inseridos,<br/>
@@ -223,9 +223,10 @@ class Adapter extends Conection
      * @param boolean $getQueryString default FALSE<br/>
      * <b>TRUE evita o execução da query e retorna a string formada para execução no banco de dados</b><br/>
      * <b>FALSE executa o procedimento no banco de dados</b><br/>
-     * @return boolean TRUE|FALSE <br/>
+     * @return boolean TRUE|FALSE|String <br/>
      * TRUE procedimento realizado com sucesso<br/>
      * FALSE falha ao executar procedimento de inserção
+     * String da query formada para submit no banco de dados
      */
     protected function insert($table, array $fields, array $args, $getQueryString = false)
     {
@@ -243,14 +244,38 @@ class Adapter extends Conection
     }
     
     /**
-     * Construção de metodo para update de dados
-     * @param String $table Tabela a ser feita inserção
-     * @param Array $args Lista de campos e valores a serem feitos update
-     *                    Não esquecer de usar metodo <b>->where()</b> para limitar delete
+     * Método update<br/>
+     * <b>Dica: </b>Fique atento ao parametro where, sob o risco de modificar toda sua base de dados.
+     * @param String $table Nome da tabela
+     * @param array $args array contendo nomes e valores dos campos a serem atualizados<br/>
+     * <b>
+     * array(<br/>
+     *   'campo1' => 'valor',<br/>
+     *   'campo2' => 'valor'<br/>
+     *   ...<br/>
+     * )<br/>
+     * </b>
+     * @param Array $where este array contera os termos para atualização dos dados<br/>
+     * <b>
+     * ex.: array( <br/>
+     *  'tabela.campo = ?' => array( <br/>
+     *      'valor do ?', '...' <br/>
+     *  )<br/>
+     * )<br/>
+     * Dica: * ? representa o valor a ser feito bind obrigatório o uso de ? para parametrização.
+     * </b>
+     * @param boolean $getQueryString default FALSE<br/>
+     * <b>TRUE evita o execução da query e retorna a string formada para execução no banco de dados</b><br/>
+     * <b>FALSE executa o procedimento no banco de dados</b><br/>
+     * @return boolean TRUE|FALSE|String <br/>
+     * TRUE procedimento realizado com sucesso<br/>
+     * FALSE falha ao executar procedimento de inserção
+     * String da query formada para submit no banco de dados
+     * 
     */
-    protected function update($table, array $args)
+    protected function update($table, array $args, $where = null, $getQueryString = false)
     {
-        return $this->adapter->update($table, $args);
+        return $this->adapter->update($table, $args, $where, $getQueryString);
     }
     
     /**
@@ -266,6 +291,7 @@ class Adapter extends Conection
      *                    PDO::FETCH_ASSOC<br/>
      *                    PDO::FETCH_BOTH<br/>
      *                    PDO::FETCH_CLASS<br/>
+     *                    PDO::FETCH_NUM<br/>
      *                    e outros<br/>
      */
     protected function procedure(array $args, $type = null)
@@ -279,6 +305,7 @@ class Adapter extends Conection
      *                    PDO::FETCH_ASSOC<br/>
      *                    PDO::FETCH_BOTH<br/>
      *                    PDO::FETCH_CLASS<br/>
+     *                    PDO::FETCH_NUM<br/>
      *                    e outros<br/>
      * @param String $class Indica a qual object deseja-se transforma o retorno da consulta<br/>
      * @return Object|Array<br/>
@@ -290,12 +317,14 @@ class Adapter extends Conection
     
     /**
      * Retorna a Query formada a ser submetida a base de dados
-     * @param int $operation Selecionará o tipo de retorno
-     *                       ::SQL_STRING - 1 retornará uma \String com a query (default)
-     *                       ::SQL_OBJECT - 2 retornará um \ArrayObject separado por procedimentos sql
-     * @return \String|\ArrayObject 
+     * @param int $operation Selecionará o tipo de retorno<br/>
+     * <b>
+     * self::SQL_STRING - 1 retornará uma \String com a query (default)<br/>
+     * self::SQL_OBJECT - 2 retornará um \ArrayObject separado por procedimentos sql
+     * </b>
+     * @return String|\ArrayObject 
     */
-    protected function getQuery($operation = 1)
+    protected function getQuery($operation = self::SQL_STRING)
     {
         return $this->adapter->getQuery($operation);
     }
