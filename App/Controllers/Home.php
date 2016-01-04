@@ -16,7 +16,7 @@ class Home extends Controller
     {
         $this->setTitle("Home");
         $user = new User();
-        $this->view->id = $user->newUser();
+        $this->view->id = $user->getUsers();
         $this->render("index", "layout");
     }
 }

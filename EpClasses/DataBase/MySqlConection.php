@@ -473,7 +473,11 @@ class MySqlConection extends Conection
                 endif;
                 
                 $this->stmt = $this->dbInstance->prepare($this->select);
-                $this->bindValues();
+                
+                if(!empty($this->toPrepare)):
+                    $this->bindValues();
+                endif;
+                
                 if($this->execute()):
                     
                     $this->lastInsertId = $this->dbInstance->lastInsertId();
@@ -496,12 +500,56 @@ class MySqlConection extends Conection
     
     /**
      * Delete de dados em banco de dados MySql
-     * @param type $table Tabela a ser feito delete no bando de dados
-     * @return boolean true|false
+     * @param string $table Tabela a ser feito delete no bando de dados
+     * @param array $where termos e valores a serem considerados para delete
+     * @return boolean true|false|string
+     * @throws \PDOException
     */
-    protected function delete($table)
+    protected function delete($table, $where = null, $getQueryString = false)
     {
-        
+        try
+        {
+            if(!empty($table)):
+                $this->clear();
+                $this->select = "DELETE FROM {$table}";
+                
+                if(!empty($where)):
+                    
+                    foreach ($where as $terms => $values):
+
+                        $this->where($terms, $values);
+                    endforeach;
+                    $this->select .= " WHERE {$this->where};";
+                endif;
+                
+                if($getQueryString):
+                    return $this->select;
+                endif;
+                
+                $this->stmt = $this->dbInstance->prepare($this->select);
+                
+                if(!empty($this->toPrepare)):
+                    $this->bindValues();
+                endif;
+                
+                if($this->execute()):
+                    
+                    $this->clear();
+                    return true;
+                endif;
+                
+                $this->clear();
+                return false;
+                
+            else:
+                
+                throw new \PDOException('Os Parametros dalete->($table) obrigatório parametrização.');
+            endif;
+        }
+        catch(\PDOException $ex)
+        {
+            throw new \PDOException("ERRO AO TENTAR REALIZAR DELETE: ".$ex->getMessage());
+        }
     }
     
     /**
@@ -541,16 +589,19 @@ class MySqlConection extends Conection
                     
                         $this->where($terms, $values);
                     endforeach;
+                    
+                    $this->select .= " WHERE {$this->where};";
                 endif;
-                
-                $this->select .= " WHERE {$this->where};";
                 
                 if($getQueryString):
                     return $this->select;
                 endif;
                 
                 $this->stmt = $this->dbInstance->prepare($this->select);
-                $this->bindValues();
+                
+                if(!empty($this->toPrepare)):
+                    $this->bindValues();
+                endif;
                 
                 if($this->execute()):
                     

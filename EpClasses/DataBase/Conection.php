@@ -79,7 +79,7 @@ abstract class Conection implements InterfaceConection
         }  
         catch (\Exception $ex)
         {
-            echo "ERRO AO TENTAR LER ARQUIVO DE CONFIGURAÇÃO .XML: ". $ex->getMessage();
+            throw new Exception("ERRO AO TENTAR LER ARQUIVO DE CONFIGURAÇÃO .XML: ". $ex->getMessage());
         }
     }
     
@@ -141,12 +141,12 @@ abstract class Conection implements InterfaceConection
     /**
      * Obriga a implentação de método para realizar deletes ao bando de dados
      */
-    abstract protected function delete($table);
+    abstract protected function delete($table, $where = null, $getQueryString = false);
     
     /**
      * Obriga a implentação de método para realizar updates ao bando de dados
      */
-    abstract protected function update($table, array $args);
+    abstract protected function update($table, array $args, $where = null, $getQueryString = false);
     
     /**
      * Obriga a implentação de método para realizar procedures no bando de dados
@@ -161,7 +161,7 @@ abstract class Conection implements InterfaceConection
     /**
      *  Obriga a implentação de método para conseguir a string da query formada pela objeto de execução da Query
      */
-    abstract protected function getQuery($operation = MySqlConection::SQL_STRING);
+    abstract protected function getQuery($operation = self::SQL_STRING);
     
     /**
      * Obriga a implentação de método para conseguir o último id inserido no bando de dados

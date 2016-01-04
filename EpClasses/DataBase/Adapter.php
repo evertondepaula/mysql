@@ -234,13 +234,30 @@ class Adapter extends Conection
     }
     
     /**
-     * Construção de metodo para delete de dados
-     * @param String $table Tabela a ser feita inserção
-     *                      Não esquecer de usar metodo <b>->where()</b> para limitar delete
+     * Método update<br/>
+     * <b>Dica: </b>Fique atento ao parametro where, sob o risco de <b>deletar</b> toda sua base de dados.
+     * @param String $table Nome da tabela
+     * @param Array $where este array contera os termos para delete dos dados<br/>
+     * <b>
+     * ex.: array( <br/>
+     *  'tabela.campo = ?' => array( <br/>
+     *      'valor do ?', '...' <br/>
+     *  )<br/>
+     * )<br/>
+     * Dica: * ? representa o valor a ser feito bind obrigatório o uso de ? para parametrização.
+     * </b>
+     * @param boolean $getQueryString default FALSE<br/>
+     * <b>TRUE evita o execução da query e retorna a string formada para execução no banco de dados</b><br/>
+     * <b>FALSE executa o procedimento no banco de dados</b><br/>
+     * @return boolean TRUE|FALSE|String <br/>
+     * TRUE procedimento realizado com sucesso<br/>
+     * FALSE falha ao executar procedimento de inserção
+     * String da query formada para submit no banco de dados
+     * 
     */
-    protected function delete($table)
+    protected function delete($table, $where = null, $getQueryString = false)
     {
-        return $this->adapter->delete($table);
+        return $this->adapter->delete($table, $where, $getQueryString);
     }
     
     /**

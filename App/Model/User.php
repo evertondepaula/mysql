@@ -33,7 +33,7 @@ class User extends Adapter
     
     public function updateUser()
     {
-        $this->update($this->table,
+        return $this->update($this->table,
                             array(
                                 "nome" => "Everton Jose de",
                                 "sobrenome" => "Paula"
@@ -41,6 +41,15 @@ class User extends Adapter
                             array(
                                 "{$this->table}.idUsers = ?" => array(1)
                             )
+                      );
+    }
+    
+    public function deleteUser()
+    {
+        return $this->delete($this->table, 
+                        array(
+                           "{$this->table}.idUsers > ?" => array(1)
+                        )
                       );
     }
 }
